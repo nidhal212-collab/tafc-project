@@ -23,12 +23,20 @@ export default async function HomePage({ params }: Props) {
     return (
         <>
             <Header />
+            {/*
+              Order and tone alternate deliberately: ink → light → shell → ink →
+              cinematic → light → ink. The three product showcases progress
+              browse (Categories, a text index) → featured (BestSellers, a
+              photographic rail) → full grid (CatalogPreview, spec cards), so no
+              two of them share a treatment, with AboutPreview as the mid-page
+              credibility break and TargetClients as a full-bleed video seam.
+            */}
             <main>
                 <Hero />
                 <Marquee />
-                <AboutPreview />
-                <BestSellers />
                 <Categories />
+                <BestSellers />
+                <AboutPreview />
                 <TargetClients />
                 <CatalogPreview />
                 <ContactPreview />

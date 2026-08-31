@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter, Sora, Manrope } from "next/font/google"
+import { Inter, Sora, JetBrains_Mono } from "next/font/google"
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
@@ -11,7 +11,13 @@ import { cn } from "@/lib/utils"
 import { LoadingProvider } from "@/components/ui/loading-provider"
 import "../globals.css"
 
-// Optimized font loading with display swap for better performance
+// Optimized font loading with display swap for better performance.
+// Sora = display (headings), Inter = body/UI, JetBrains Mono = the spec/data
+// layer (origins, calibers, index numerals, stat labels). Manrope was previously
+// loaded here but only ever referenced via `font-manrope`, which is not
+// registered in globals.css `@theme` — so it downloaded on every page and
+// rendered nothing. Mono is limited to two weights for the same reason: only
+// 400 and 500 are used.
 const sora = Sora({
     subsets: ["latin"],
     weight: ["400", "500", "600", "700", "800"],
@@ -19,16 +25,16 @@ const sora = Sora({
     display: "swap",
 })
 
-const manrope = Manrope({
-    subsets: ["latin"],
-    weight: ["400", "500", "600", "700"],
-    variable: "--font-manrope",
-    display: "swap",
-})
-
 const inter = Inter({
     subsets: ["latin"],
     variable: "--font-inter",
+    display: "swap",
+})
+
+const jetbrainsMono = JetBrains_Mono({
+    subsets: ["latin"],
+    weight: ["400", "500"],
+    variable: "--font-jetbrains",
     display: "swap",
 })
 
@@ -171,9 +177,9 @@ export default async function LocaleLayout({
                 className={cn(
                     inter.variable,
                     sora.variable,
-                    manrope.variable,
-                    "font-sans antialiased min-h-screen bg-slate-50 text-slate-900",
-                    "selection:bg-[#22C5C5] selection:text-[#042635]"
+                    jetbrainsMono.variable,
+                    "font-sans antialiased min-h-screen bg-white text-tafc-ink",
+                    "selection:bg-tafc-accent selection:text-tafc-ink"
                 )}
             >
                 <NextIntlClientProvider messages={messages}>

@@ -25,6 +25,14 @@
     "ctaPrimary": "Découvrir nos produits",
     "ctaSecondary": "En savoir plus sur nous",
     "featuredSelection": "Sélection mise en avant",
+    "manifest": {
+      "origin": "Origine",
+      "originValue": "Tunisie · Algérie",
+      "ranges": "Gammes",
+      "references": "Références",
+      "coldChain": "Chaîne du froid",
+      "coldChainValue": "Frais / Congelé"
+    },
     "products": {
       "seaBass": {
         "name": "Loup de Mer",
@@ -125,6 +133,7 @@
     "badge": "Notre catalogue",
     "title": "Un aperçu de notre catalogue",
     "description": "Découvrez quelques-unes de nos références emblématiques avant d'explorer tous les produits.",
+    "references": "Références",
     "viewAll": "Voir tout le catalogue"
   },
 
@@ -134,6 +143,11 @@
     "description": "Dites-nous quel type d'établissement vous êtes, vos volumes, vos fréquences de livraison… Notre équipe vous accompagne dans la définition de votre approvisionnement.",
     "cta": "Prendre contact avec l'équipe",
     "location": "Basé en Tunisie & Algérie",
+    "channels": {
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "based": "Implantations"
+    },
     "mapTitle": "Localisation TAFC - Tunisie & Algérie"
   },
 

@@ -4,28 +4,24 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Brand colors from logo */
-  --tafc-blue-light: #00a2e8;
-  --tafc-blue-medium: #0092d0;
-  --tafc-navy: #1c2459;
-
-  /* Deep Ocean Luxury Theme */
-  --tafc-deep-navy: #020c1b;
-  --tafc-deep-teal: #0a192f;
-  --tafc-ocean-cyan: #64ffda;
-  --tafc-royal-blue: #5865f2;
-
-  /* Neutral & premium tones */
-  --tafc-bg-light: #f3f7fd;
-  --tafc-bg-sand: #f5ece2;
-  --tafc-white: #ffffff;
-  --tafc-text-primary: #111827;
-  --tafc-text-secondary: #6b7280;
-  --tafc-border: #e5e7eb;
-
-  /* Accent CTA */
-  --tafc-coral: #ff6b4a;
-  --tafc-coral-dark: #e45033;
+  /* ==========================================================================
+     TAFC DESIGN SYSTEM — four colours, one job each.
+     Everything on the site resolves to these. Do not introduce new hues.
+       ink    #042635  deep ocean blue — dark surfaces, footer, badges
+       white  #ffffff  + shell #f5f8fa — light content surfaces
+       accent #22c5c5  teal — eyebrows, rules, icons, hover, focus rings
+       action #ff6b4a  coral — PRIMARY CTA BUTTONS ONLY
+     (#25D366 and its hover shade #20BD5A are WhatsApp's own brand greens and are
+      exempt, on WhatsApp CTAs only.)
+     ========================================================================== */
+  --tafc-ink: #042635;
+  --tafc-ink-raised: #062f41;
+  --tafc-ink-line: #0a3d53;
+  --tafc-accent: #22c5c5;
+  --tafc-accent-soft: #4fd4d4;
+  --tafc-action: #ff6b4a;
+  --tafc-action-dark: #e45033;
+  --tafc-shell: #f5f8fa;
 
   /* Design tokens */
   --background: oklch(1 0 0);
@@ -99,26 +95,86 @@
 }
 
 @theme inline {
-  --font-sans: "Inter", "Inter Fallback", system-ui, sans-serif;
-  --font-mono: "Geist Mono", "Geist Mono Fallback", monospace;
+  /* Fonts. `--font-sans` previously hardcoded the literal family "Inter", which
+     next/font never registers globally, so body text silently fell back to
+     system-ui. Point it at the variable next/font actually emits.
+     `--font-display` makes `font-display` resolve to Sora — the old `font-sora`
+     and `font-manrope` classes were never registered here and did nothing.
+     `--font-mono` previously named "Geist Mono", which is not loaded anywhere in
+     the app, so every `font-mono` element fell back to the browser default. It
+     now points at the JetBrains Mono variable emitted by next/font — the site's
+     third type role, carrying the spec/data layer (origins, calibers, pack
+     formats, index numbers). */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
 
-  /* TAFC Custom Colors */
-  --color-tafc-blue-light: var(--tafc-blue-light);
-  --color-tafc-blue-medium: var(--tafc-blue-medium);
-  --color-tafc-navy: var(--tafc-navy);
-  --color-tafc-bg-light: var(--tafc-bg-light);
-  --color-tafc-bg-sand: var(--tafc-bg-sand);
-  --color-tafc-coral: var(--tafc-coral);
-  --color-tafc-coral-dark: var(--tafc-coral-dark);
-  --color-tafc-text-primary: var(--tafc-text-primary);
-  --color-tafc-text-secondary: var(--tafc-text-secondary);
-  --color-tafc-border: var(--tafc-border);
+  /* ---- Fluid type scale -------------------------------------------------
+     One scale for the whole site. clamp() means no `text-2xl md:text-4xl
+     lg:text-6xl` chains — the size interpolates with the viewport instead. */
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.18em;
+  --text-eyebrow--font-weight: 600;
 
-  /* Deep Ocean Luxury Theme Colors */
-  --color-tafc-deep-navy: var(--tafc-deep-navy);
-  --color-tafc-deep-teal: var(--tafc-deep-teal);
-  --color-tafc-ocean-cyan: var(--tafc-ocean-cyan);
-  --color-tafc-royal-blue: var(--tafc-royal-blue);
+  --text-display: clamp(2.75rem, 6.5vw, 5.5rem);
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 700;
+
+  --text-h1: clamp(2.25rem, 4.6vw, 3.75rem);
+  --text-h1--line-height: 1.05;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h1--font-weight: 700;
+
+  --text-h2: clamp(1.875rem, 3.4vw, 2.875rem);
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h2--font-weight: 700;
+
+  --text-h3: clamp(1.0625rem, 1.5vw, 1.375rem);
+  --text-h3--line-height: 1.25;
+  --text-h3--letter-spacing: -0.01em;
+  --text-h3--font-weight: 600;
+
+  --text-deck: clamp(1rem, 1.25vw, 1.1875rem);
+  --text-deck--line-height: 1.65;
+
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.45;
+
+  /* ---- Data layer -------------------------------------------------------
+     The spec/catalogue voice, set in mono. `data` is the small tracked label
+     that precedes a value (ORIGIN, CALIBER, RANGES); `stat` is the large
+     tabular numeral used for hard figures. Together these are what make the
+     page read as a trade document rather than a brochure. */
+  --text-data: 0.6875rem;
+  --text-data--line-height: 1.4;
+  --text-data--letter-spacing: 0.1em;
+  --text-data--font-weight: 500;
+
+  --text-stat: clamp(1.75rem, 2.6vw, 2.5rem);
+  --text-stat--line-height: 1;
+  --text-stat--letter-spacing: -0.03em;
+  --text-stat--font-weight: 600;
+
+  /* ---- Index numerals ---------------------------------------------------
+     The 01…07 markers down the ranges index. Ranges are a fixed, ordered
+     catalogue listing, so the numbers carry real reference information. */
+  --text-index: 0.75rem;
+  --text-index--line-height: 1;
+  --text-index--letter-spacing: 0.04em;
+  --text-index--font-weight: 500;
+
+  /* ---- TAFC design-system colours ---- */
+  --color-tafc-ink: var(--tafc-ink);
+  --color-tafc-ink-raised: var(--tafc-ink-raised);
+  --color-tafc-ink-line: var(--tafc-ink-line);
+  --color-tafc-accent: var(--tafc-accent);
+  --color-tafc-accent-soft: var(--tafc-accent-soft);
+  --color-tafc-action: var(--tafc-action);
+  --color-tafc-action-dark: var(--tafc-action-dark);
+  --color-tafc-shell: var(--tafc-shell);
 
   /* Standard tokens */
   --color-background: var(--background);
@@ -172,62 +228,71 @@
 
 /* Custom utility classes for TAFC */
 @layer utilities {
+  /* ---- Section rhythm ---------------------------------------------------
+     Vertical spacing and container width are decided once here instead of
+     being re-invented per section (they used to range py-16 → py-32). */
+  .section-y {
+    padding-block: clamp(4.5rem, 9vw, 8.5rem);
+  }
+  .section-y-tight {
+    padding-block: clamp(3rem, 5.5vw, 5rem);
+  }
+  .container-tafc {
+    width: 100%;
+    max-width: 80rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+  @media (min-width: 1024px) {
+    .container-tafc {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Eyebrow rule — the teal hairline that precedes every section label.
+     Uses margin-inline-end so it flips correctly in RTL. */
+  .eyebrow-rule::before {
+    content: "";
+    display: inline-block;
+    width: 1.75rem;
+    height: 1px;
+    vertical-align: middle;
+    margin-inline-end: 0.75rem;
+    background-color: var(--tafc-accent);
+  }
+
   .text-balance {
     text-wrap: balance;
   }
   .text-pretty {
     text-wrap: pretty;
   }
-  .glass-navy {
-    @apply bg-white/5 backdrop-blur-md border border-white/15;
+
+  /* Tabular numerals. Any figure that sits in a column — index numbers, stats,
+     calibers — needs these so digits don't jitter between rows. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
   }
-  .glass-light {
-    @apply bg-white/80 backdrop-blur-md border border-white/50;
+
+  /* ---- Horizontal rail --------------------------------------------------
+     Native scroll-snap replaces the Swiper instance the selection rail used
+     to carry: no JS, no injected global CSS, keyboard-scrollable, and it
+     breaks out of `.container-tafc` so cards bleed off the right edge.
+     Pair with `scroll-ps-*` on the element so the snapped card clears the
+     gutter — that utility is logical, so it flips in RTL. */
+  .rail {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
   }
-  .glass-crystal {
-    @apply bg-white/5 backdrop-blur-xl border-b border-white/10;
-  }
-  .gradient-ocean {
-    background: linear-gradient(135deg, var(--tafc-deep-navy) 0%, var(--tafc-deep-teal) 100%);
-  }
-  .gradient-cta {
-    background: linear-gradient(135deg, #ff6b4a 0%, #ff8a6a 100%);
-  }
-  .gradient-border-hover {
-    background: linear-gradient(135deg, var(--tafc-ocean-cyan) 0%, var(--tafc-royal-blue) 100%);
+  .rail > * {
+    scroll-snap-align: start;
+    flex: none;
   }
 }
 
-/* Infinite marquee animation */
-@keyframes marquee {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 30s linear infinite;
-}
-
-/* Floating badge animation */
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) translateX(-50%);
-  }
-  50% {
-    transform: translateY(-10px) translateX(-50%);
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-/* Shimmer animation for skeleton loaders */
+/* Shimmer sweep behind `ImageWithSkeleton`'s LQIP placeholder. */
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
@@ -250,8 +315,23 @@
   display: none;
 }
 
-/* Swiper Best Sellers Pagination */
-.swiper-pagination-bullet-active {
-  background: #22C5C5 !important;
-  transform: scale(1.3);
+/* ==========================================================================
+   Reduced motion. Neutralises the marquee, the hero Ken Burns pan and every
+   transform-based scroll reveal, while leaving opacity fades intact so
+   content still appears. Framer Motion components additionally check
+   useReducedMotion() so their animations are skipped rather than snapped.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-shimmer {
+    animation: none !important;
+  }
 }

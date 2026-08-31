@@ -1,211 +1,158 @@
 "use client"
 
 import Image from "next/image"
-import { useTranslations } from 'next-intl'
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
-import { Ship, Fish, Award, CheckCircle2 } from "lucide-react"
+import { useTranslations } from "next-intl"
+import { Link } from "@/i18n/navigation"
+import { Ship, Fish, Award, Check } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Reveal } from "@/components/ui/reveal"
+import { SectionShell, InkGlow } from "@/components/ui/section-shell"
+import { SectionIntro } from "@/components/ui/section-intro"
+import { DataLabel } from "@/components/ui/spec"
 
-const pillarConfig = [
-  {
-    key: "vision",
-    icon: Ship,
-    gradient: "from-cyan-500/20 to-blue-500/20",
-    iconColor: "text-cyan-400",
-  },
-  {
-    key: "mission",
-    icon: Fish,
-    gradient: "from-teal-500/20 to-cyan-500/20",
-    iconColor: "text-teal-400",
-  },
-  {
-    key: "whyTafc",
-    icon: Award,
-    gradient: "from-blue-500/20 to-indigo-500/20",
-    iconColor: "text-blue-400",
-  },
-]
+/** Icons only — the three per-pillar gradients and three different icon colours
+ *  were part of the accent sprawl. One accent, applied consistently. */
+const PILLARS = [
+  { key: "vision", icon: Ship },
+  { key: "mission", icon: Fish },
+  { key: "whyTafc", icon: Award },
+] as const
 
-const highlightKeys = [
-  "partnership",
-  "modernFleets",
-  "traceability",
-  "standards",
-]
+const HIGHLIGHT_KEYS = ["partnership", "modernFleets", "traceability", "standards"] as const
 
+/**
+ * Mid-page credibility break, on navy.
+ *
+ * The `15+` / years-of-experience figure moves out of a small floating badge and
+ * becomes display type. Setting hard numerals large is the one device every
+ * exporter studied uses to assert scale (Mowi, Nueva Pescanova, Iceland
+ * Seafood) — and none of them animates a counter to do it.
+ *
+ * This section also picks up `hero.ctaSecondary` ("Learn more about us"), which
+ * the hero rebuild freed up. It previously had no link or button at all, so the
+ * page had no route into /about from here.
+ */
 export function AboutPreview() {
-  const t = useTranslations('about')
-  const sectionRef = useRef(null)
-  const isInView = useInView(sectionRef, { once: true, margin: "-100px" })
+  const t = useTranslations("about")
+  const tHero = useTranslations("hero")
 
   return (
-    <section
-      ref={sectionRef}
-      className="py-16 sm:py-20 md:py-28 lg:py-32 bg-gradient-to-b from-[#0a1628] via-[#0d1f35] to-[#0a1628] relative overflow-hidden"
-    >
-      {/* Ambient effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(0,162,232,0.05),transparent_70%)]" />
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+    <SectionShell tone="ink">
+      <InkGlow className="-top-40 start-1/4" />
 
-      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-12 sm:mb-16 md:mb-20"
-        >
-          <span className="inline-block text-[10px] sm:text-xs text-cyan-400 uppercase tracking-[0.15em] sm:tracking-[0.2em] font-semibold mb-3 sm:mb-4 border border-cyan-400/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-cyan-400/5">
-            {t('badge')}
-          </span>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 text-balance leading-tight px-2">
-            {t('titlePart1')}{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">{t('tunisia')}</span> {t('and')}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">{t('algeria')}</span>
-          </h2>
-        </motion.div>
+      <SectionIntro
+        eyebrow={t("badge")}
+        tone="ink"
+        title={
+          <>
+            {t("titlePart1")} <span className="text-tafc-accent">{t("tunisia")}</span>{" "}
+            {t("and")} <span className="text-tafc-accent">{t("algeria")}</span>
+          </>
+        }
+      />
 
-        {/* Main Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-16 items-center mb-24">
-          {/* Image Collage */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
-          >
-            <div className="relative">
-              {/* Main large image */}
-              <div className="relative h-72 md:h-96 rounded-3xl overflow-hidden shadow-2xl shadow-black/40">
-                <Image
-                  src="/mediterranean-fishing-boats-harbor-tunisia-sunrise.jpg"
-                  alt={t('imageAlt.fleet')}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628]/80 via-transparent to-transparent" />
-                <div className="absolute bottom-5 left-5">
-                  <span className="bg-white/10 backdrop-blur-md text-white text-sm font-medium px-4 py-2 rounded-full border border-white/10">
-                    {t('modernFleets')}
-                  </span>
-                </div>
-              </div>
+      <div className="mt-16 grid items-start gap-14 lg:grid-cols-2 lg:gap-20">
+        {/* ---- Image collage ------------------------------------------- */}
+        <Reveal x={-32} y={0} className="relative">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-2xl ring-1 ring-white/10">
+            <Image
+              src="/mediterranean-fishing-boats-harbor-tunisia-sunrise.jpg"
+              alt={t("imageAlt.fleet")}
+              fill
+              sizes="(max-width: 1024px) 100vw, 45vw"
+              className="object-cover"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-tafc-ink/80 via-transparent to-transparent"
+            />
+            <span className="absolute bottom-5 start-5 rounded-full bg-tafc-ink/70 px-3 py-1.5 font-mono text-data text-white uppercase ring-1 ring-inset ring-white/15 backdrop-blur-sm">
+              {t("modernFleets")}
+            </span>
+          </div>
 
-              {/* Overlapping smaller images */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                className="absolute -bottom-8 -right-4 md:right-8 w-40 md:w-52 h-32 md:h-40 rounded-2xl overflow-hidden shadow-2xl border-4 border-[#0a1628]"
-              >
-                <Image
-                  src="/seafood-processing-facility-workers-quality-contro.jpg"
-                  alt={t('imageAlt.processing')}
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                className="absolute -top-6 -right-2 md:right-16 w-36 md:w-44 h-28 md:h-36 rounded-2xl overflow-hidden shadow-2xl border-4 border-[#0a1628]"
-              >
-                <Image
-                  src="/fresh-fish-market-selection-mediterranean-premium.jpg"
-                  alt={t('imageAlt.selection')}
-                  fill
-                  className="object-cover"
-                />
-              </motion.div>
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl ring-1 ring-white/10">
+              <Image
+                src="/seafood-processing-facility-workers-quality-contro.jpg"
+                alt={t("imageAlt.processing")}
+                fill
+                sizes="(max-width: 1024px) 50vw, 22vw"
+                className="object-cover"
+              />
             </div>
-
-            {/* Floating stat card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={isInView ? { opacity: 1, scale: 1 } : {}}
-              transition={{ duration: 0.5, delay: 0.7 }}
-              className="absolute -bottom-4 left-4 md:left-8 bg-gradient-to-br from-[#1a3550] to-[#0d2137] p-5 rounded-2xl shadow-2xl border border-cyan-500/20"
-            >
-              <div className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-teal-400">
-                15+
-              </div>
-              <div className="text-sm text-gray-300 mt-1">{t('yearsExperience')}</div>
-            </motion.div>
-          </motion.div>
-
-          {/* Text Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.8, delay: 0.3 }}
-          >
-            <p className="text-lg text-gray-300 leading-relaxed mb-6">
-              {t('description1')}
-            </p>
-            <p className="text-gray-400 leading-relaxed mb-8">
-              {t('description2')}
-            </p>
-
-            {/* Highlights */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {highlightKeys.map((key, index) => (
-                <motion.div
-                  key={key}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className="flex items-center gap-3 group"
-                >
-                  <div className="w-6 h-6 rounded-full bg-cyan-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-cyan-500/20 transition-colors">
-                    <CheckCircle2 className="w-4 h-4 text-cyan-400" />
-                  </div>
-                  <span className="text-sm text-gray-200 font-medium">{t(`highlights.${key}`)}</span>
-                </motion.div>
-              ))}
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl ring-1 ring-white/10">
+              <Image
+                src="/fresh-fish-market-selection-mediterranean-premium.jpg"
+                alt={t("imageAlt.selection")}
+                fill
+                sizes="(max-width: 1024px) 50vw, 22vw"
+                className="object-cover"
+              />
             </div>
-          </motion.div>
-        </div>
+          </div>
+        </Reveal>
 
-        {/* Vision / Mission / Pourquoi TAFC Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {pillarConfig.map((pillar, index) => (
-            <motion.div
-              key={pillar.key}
-              initial={{ opacity: 0, y: 40 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.6 + index * 0.15, duration: 0.6 }}
-              className="group"
-            >
-              <div
-                className={`relative h-full bg-gradient-to-br ${pillar.gradient} backdrop-blur-xl rounded-3xl p-8 border border-white/[0.08] hover:border-white/[0.15] transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/10 overflow-hidden`}
-              >
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        {/* ---- Text --------------------------------------------------- */}
+        <Reveal x={32} y={0} delay={0.1}>
+          <p className="text-deck text-pretty text-white/80">{t("description1")}</p>
+          <p className="mt-5 text-deck text-pretty text-white/55">{t("description2")}</p>
 
-                {/* Illuminated border effect */}
-                <div
-                  className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, rgba(0,162,232,0.1) 0%, transparent 50%, rgba(0,146,208,0.1) 100%)",
-                  }}
-                />
+          {/* The one hard figure on this band, set as a stat rather than a
+              floating badge. None of the exporters studied animates a counter
+              to do this, and neither does this. */}
+          <div className="mt-10 flex items-center gap-6 border-t border-tafc-ink-line pt-8">
+            <span className="font-display text-stat text-tafc-accent tabular">15+</span>
+            <DataLabel tone="ink" className="max-w-[11rem]">
+              {t("yearsExperience")}
+            </DataLabel>
+          </div>
 
-                <div className="relative z-10">
-                  <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-white/10 transition-all duration-300">
-                    <pillar.icon className={`w-7 h-7 ${pillar.iconColor}`} />
-                  </div>
-                  <h3 className="font-bold text-xl text-white mb-3 tracking-tight">{t(`pillars.${pillar.key}.title`)}</h3>
-                  <p className="text-gray-300/90 leading-relaxed">{t(`pillars.${pillar.key}.description`)}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+            {HIGHLIGHT_KEYS.map((key) => (
+              <li key={key} className="flex items-center gap-3">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-tafc-accent/12 ring-1 ring-inset ring-tafc-accent/25">
+                  <Check aria-hidden="true" className="size-3.5 text-tafc-accent" strokeWidth={2.5} />
+                </span>
+                <span className="text-meta font-medium text-white/80">
+                  {t(`highlights.${key}`)}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <Button asChild size="xl" variant="onInk" className="mt-10">
+            <Link href="/about">{tHero("ctaSecondary")}</Link>
+          </Button>
+        </Reveal>
       </div>
-    </section>
+
+      {/* ---- Pillars -------------------------------------------------- */}
+      {/* Vision / mission / why is not a sequence, so these carry no numbering.
+          The icon tiles and per-card gradients are gone: a teal hairline that
+          runs the width of the card on hover is the whole state change. */}
+      <div className="mt-20 grid gap-6 md:grid-cols-3">
+        {PILLARS.map((pillar, index) => (
+          <Reveal
+            key={pillar.key}
+            as="article"
+            delay={index * 0.08}
+            className="group relative h-full overflow-hidden rounded-2xl border border-tafc-ink-line bg-tafc-ink-raised p-8 transition-colors duration-500 hover:border-tafc-accent/40"
+          >
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-tafc-accent transition-transform duration-700 ease-out group-hover:scale-x-100 rtl:origin-right"
+            />
+            <pillar.icon aria-hidden="true" className="size-6 text-tafc-accent" />
+            <h3 className="mt-6 font-display text-h3 text-white">
+              {t(`pillars.${pillar.key}.title`)}
+            </h3>
+            <p className="mt-3 text-pretty text-white/60">
+              {t(`pillars.${pillar.key}.description`)}
+            </p>
+          </Reveal>
+        ))}
+      </div>
+    </SectionShell>
   )
 }

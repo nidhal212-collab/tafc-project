@@ -1,12 +1,16 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Image from "next/image"
-import { useTranslations, useMessages } from 'next-intl'
+import { useTranslations, useMessages } from "next-intl"
 import { Link } from "@/i18n/navigation"
 import { ArrowRight } from "lucide-react"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Reveal } from "@/components/ui/reveal"
+import { SectionShell } from "@/components/ui/section-shell"
+import { SectionIntro } from "@/components/ui/section-intro"
 import { categories } from "@/lib/categories"
-import { motion } from "framer-motion"
 
 type CategoryTranslation = {
   name: string
@@ -17,132 +21,207 @@ type ProductsDataTranslations = {
   categories: Record<string, CategoryTranslation>
 }
 
+/**
+ * Ranges index — the first of the three product showcases.
+ *
+ * Previously a grid of seven portrait photo tiles, which was the same treatment
+ * the featured rail and the catalogue grid also used: three photo grids in a row,
+ * seven tiles deep, and a buyer had to scroll three screens to learn the ranges
+ * exist. It is now a trade index: numbered rows, one line of description each,
+ * with the photograph carried in a single sticky pane that crossfades as you move
+ * down the list.
+ *
+ * All seven ranges are legible at once, the numerals are real reference markers
+ * for a fixed catalogue listing, and the section no longer competes with the two
+ * photographic showcases further down the page.
+ *
+ * The pane is decorative and desktop-only, so it is mounted behind a
+ * `matchMedia` check rather than hidden with CSS — hidden images are still
+ * fetched, and phones have no hover to drive it. Phones get a thumbnail per row
+ * instead, which is denser than the tiles it replaces.
+ */
 export function Categories() {
-  const t = useTranslations('categories')
+  const t = useTranslations("categories")
   const messages = useMessages()
-  const productsData = (messages.productsData as unknown) as ProductsDataTranslations | undefined
+  const productsData = messages.productsData as unknown as ProductsDataTranslations | undefined
 
-  // Helper to get translated category name and description
+  const [active, setActive] = useState(0)
+  const [showPane, setShowPane] = useState(false)
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)")
+    const sync = () => setShowPane(query.matches)
+    sync()
+    query.addEventListener("change", sync)
+    return () => query.removeEventListener("change", sync)
+  }, [])
+
   const getTranslatedCategory = (slug: string, fallbackName: string, fallbackDesc: string) => {
     const translation = productsData?.categories?.[slug]
     return {
       name: translation?.name || fallbackName,
-      description: translation?.description || fallbackDesc
+      description: translation?.description || fallbackDesc,
     }
   }
 
+  const translated = categories.map((category) =>
+    getTranslatedCategory(category.slug, category.name, category.description)
+  )
+
   return (
-    <section className="py-16 sm:py-20 md:py-28 lg:py-32 bg-gradient-to-b from-[#0a1628] to-[#0d1f35] relative overflow-hidden">
-      {/* Ice texture effect */}
-      <div
-        className="absolute inset-0 opacity-[0.015]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
+    <SectionShell tone="light">
+      {/* ---- Header ------------------------------------------------------ */}
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+        <SectionIntro
+          eyebrow={t("badge")}
+          title={t("title")}
+          deck={t("description")}
+          className="max-w-2xl"
+        />
 
-      {/* Ambient glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyan-500/5 rounded-full blur-3xl" />
-
-      <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-        >
-          <div className="text-center mb-10 sm:mb-12 md:mb-16">
-            <span className="inline-block text-[10px] sm:text-xs text-cyan-400 uppercase tracking-[0.15em] sm:tracking-[0.2em] font-semibold mb-3 sm:mb-4 border border-cyan-400/20 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-cyan-400/5">
-              {t('badge')}
-            </span>
-
-            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6 text-balance px-2">
-              {t('title')}
-            </h2>
-
-            <p className="text-gray-400 max-w-2xl mx-auto text-sm sm:text-base md:text-lg px-2">
-              {t('description')}
-            </p>
-          </div>
-        </motion.div>
-
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {categories.map((category) => {
-            const translated = getTranslatedCategory(category.slug, category.name, category.description)
-            return (
-              <Link key={category.slug} href={`/products?category=${category.slug}`} className="block group h-full">
-                <div className="relative h-full bg-[#12253a]/80 backdrop-blur-sm rounded-3xl overflow-hidden border border-white/[0.06] hover:border-cyan-500/30 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/10">
-                  {/* Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <Image
-                      src={category.image}
-                      alt={translated.name}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-110 transition-transform duration-700"
-                      priority={false}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#12253a] via-[#12253a]/50 to-transparent" />
-
-                    {/* Product count badge */}
-                    <div className="absolute top-4 right-4">
-                      <span className="bg-white/10 backdrop-blur-md text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/10">
-                        {category.count}
-                      </span>
-                    </div>
-
-                    {/* Shimmer */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-6">
-                    <h3 className="font-bold text-xl text-white mb-2 group-hover:text-cyan-400 transition-colors">
-                      {translated.name}
-                    </h3>
-                    <p className="text-gray-400 text-sm leading-relaxed mb-4">{translated.description}</p>
-                    <div className="flex items-center gap-2 text-cyan-400 text-sm font-medium">
-                      <span>{t('viewProducts')}</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-
-                  <div
-                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{ boxShadow: "inset 0 1px 0 0 rgba(255,255,255,0.05)" }}
-                  />
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-
-        {/* CTA */}
-        <div className="text-center mt-12">
+        {/* The full-catalog link lives in the header rather than as a fifth
+            coral button below the fold. Coral is reserved for the three real
+            decision points on the page. */}
+        <Reveal delay={0.08} className="shrink-0 lg:pb-2">
           <Button
             asChild
-            size="lg"
-            className="bg-tafc-coral hover:bg-tafc-coral-dark text-white font-semibold px-8 py-6 text-base rounded-full transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl hover:shadow-tafc-coral/30 group"
+            size="inline"
+            variant="quiet"
+            className="font-medium text-tafc-ink/70 rtl:hover:[&_svg]:-translate-x-1"
           >
             <Link href="/products">
-              {t('viewFullCatalog')}
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              {t("viewFullCatalog")}
+              <ArrowRight aria-hidden="true" className="size-4 rtl:rotate-180" />
             </Link>
           </Button>
-        </div>
+        </Reveal>
       </div>
 
-      {/* Wave separator */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 overflow-hidden">
-        <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="w-full h-full">
-          <path
-            d="M0,60 C300,100 400,20 600,60 C800,100 900,20 1200,60 L1200,120 L0,120 Z"
-            fill="rgba(10,22,40,0.5)"
-          />
-        </svg>
+      {/* ---- Index ------------------------------------------------------- */}
+      <div className="mt-14 grid gap-10 lg:grid-cols-12 lg:gap-14">
+        {/* Pane */}
+        {showPane && (
+          <Reveal y={0} className="hidden lg:col-span-5 lg:block">
+            <div
+              aria-hidden="true"
+              className="sticky top-28 overflow-hidden rounded-2xl bg-tafc-ink ring-1 ring-tafc-ink/10"
+            >
+              <div className="relative aspect-[4/5]">
+                {categories.map((category, index) => (
+                  <Image
+                    key={category.slug}
+                    src={category.image}
+                    alt=""
+                    fill
+                    sizes="40vw"
+                    priority={index === 0}
+                    className={cn(
+                      "object-cover transition-opacity duration-700 ease-out",
+                      index === active ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-tafc-ink via-tafc-ink/25 to-transparent" />
+
+                <div className="absolute inset-x-0 bottom-0 p-7">
+                  <span className="font-mono text-index text-tafc-accent tabular">
+                    {String(active + 1).padStart(2, "0")}
+                  </span>
+                  <p className="mt-2 font-display text-h3 text-white">
+                    {translated[active].name}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        )}
+
+        {/* Rows */}
+        <div className={cn("lg:col-span-7", !showPane && "lg:col-span-12")}>
+          <ul className="border-t border-tafc-ink/[0.12]">
+            {categories.map((category, index) => {
+              const isActive = index === active
+
+              return (
+                <Reveal
+                  as="li"
+                  key={category.slug}
+                  delay={Math.min(index, 4) * 0.05}
+                  y={16}
+                  className="border-b border-tafc-ink/[0.12]"
+                >
+                  <Link
+                    href={`/products?category=${category.slug}`}
+                    onMouseEnter={() => setActive(index)}
+                    onFocus={() => setActive(index)}
+                    className="group relative flex items-center gap-4 py-5 transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tafc-accent sm:gap-6"
+                  >
+                    {/* Teal edge marker — grows from the reading edge, so it
+                        flips in RTL. */}
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "absolute inset-y-0 start-0 w-px origin-center bg-tafc-accent transition-transform duration-500 ease-out",
+                        isActive ? "scale-y-100" : "scale-y-0"
+                      )}
+                    />
+
+                    <span
+                      className={cn(
+                        "font-mono text-index tabular transition-colors duration-300 sm:ps-4",
+                        isActive ? "text-tafc-accent" : "text-tafc-ink/35"
+                      )}
+                    >
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+
+                    {/* Phones get the photograph as a thumbnail; the desktop
+                        pane replaces it from `lg`. */}
+                    <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-tafc-shell lg:hidden">
+                      <Image
+                        src={category.image}
+                        alt=""
+                        fill
+                        sizes="56px"
+                        className="object-cover"
+                      />
+                    </span>
+
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className={cn(
+                          "block font-display text-h3 transition-colors duration-300",
+                          isActive ? "text-tafc-accent" : "text-tafc-ink"
+                        )}
+                      >
+                        {translated[index].name}
+                      </span>
+                      <span className="mt-1.5 line-clamp-1 text-meta text-tafc-ink/50">
+                        {translated[index].description}
+                      </span>
+                    </span>
+
+                    <span className="hidden shrink-0 font-mono text-data text-tafc-ink/40 uppercase sm:block">
+                      {category.count}
+                    </span>
+
+                    <ArrowRight
+                      aria-hidden="true"
+                      className={cn(
+                        "size-4 shrink-0 transition-all duration-300 rtl:rotate-180",
+                        isActive
+                          ? "translate-x-0.5 text-tafc-accent rtl:-translate-x-0.5"
+                          : "text-tafc-ink/30"
+                      )}
+                    />
+                    <span className="sr-only">{t("viewProducts")}</span>
+                  </Link>
+                </Reveal>
+              )
+            })}
+          </ul>
+        </div>
       </div>
-    </section>
+    </SectionShell>
   )
 }

@@ -1,12 +1,21 @@
 "use client"
 
-import { motion } from "framer-motion"
+import Image from "next/image"
+import { motion, useReducedMotion } from "framer-motion"
 
-export function LoadingSpinner({ size = "md", className = "" }: { size?: "sm" | "md" | "lg"; className?: string }) {
+import { SkeletonBar } from "@/components/ui/skeleton-bar"
+
+export function LoadingSpinner({
+    size = "md",
+    className = "",
+}: {
+    size?: "sm" | "md" | "lg"
+    className?: string
+}) {
     const sizeClasses = {
-        sm: "w-4 h-4",
-        md: "w-8 h-8",
-        lg: "w-12 h-12"
+        sm: "size-4",
+        md: "size-8",
+        lg: "size-12",
     }
 
     return (
@@ -16,8 +25,8 @@ export function LoadingSpinner({ size = "md", className = "" }: { size?: "sm" | 
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
             >
-                <div className="absolute inset-0 rounded-full border-2 border-[#22C5C5]/20" />
-                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-[#22C5C5]" />
+                <div className="absolute inset-0 rounded-full border-2 border-tafc-accent/20" />
+                <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-tafc-accent" />
             </motion.div>
         </div>
     )
@@ -29,7 +38,7 @@ export function LoadingDots({ className = "" }: { className?: string }) {
             {[0, 1, 2].map((i) => (
                 <motion.div
                     key={i}
-                    className="w-2 h-2 rounded-full bg-[#22C5C5]"
+                    className="size-2 rounded-full bg-tafc-accent"
                     initial={{ opacity: 0.3, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{
@@ -46,110 +55,107 @@ export function LoadingDots({ className = "" }: { className?: string }) {
 
 export function LoadingPulse({ className = "" }: { className?: string }) {
     return (
-        <motion.div
-            className={`w-full h-full bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 ${className}`}
-            animate={{
-                backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
-            }}
-            transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                ease: "linear",
-            }}
-            style={{
-                backgroundSize: "200% 100%",
-            }}
+        <div
+            aria-hidden="true"
+            className={`h-full w-full animate-pulse bg-tafc-ink/[0.07] ${className}`}
         />
     )
 }
 
-// Premium App Loading Screen
+/**
+ * The brand splash. `LoadingProvider` holds this for a fixed 2000ms on every
+ * initial load, so it is the first thing every visitor sees.
+ *
+ * It used to be `bg-slate-50` — a near-white panel that then cut straight to a
+ * navy hero, so every page began with a white→navy flash. It is navy now, which
+ * matches the first band of all four routes and makes the hand-off invisible.
+ * The logo stays inside a white tile on purpose: `/logo.png` is bright cyan with
+ * a navy outline and a navy wave stripe, both of which flatten into a navy
+ * background.
+ */
 export function AppLoadingScreen() {
-    return (
-        <div className="fixed inset-0 z-[9999] bg-slate-50 flex flex-col items-center justify-center">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 opacity-[0.03]">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_#042635_1px,_transparent_1px)] bg-[length:32px_32px]" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-100/50 to-slate-100" />
-            </div>
+    const reduceMotion = useReducedMotion()
 
-            {/* Logo Animation */}
+    return (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-tafc-ink">
+            {/* Teal depth glow, same recipe as `InkGlow` on the dark sections. */}
+            <div
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-1/2 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-tafc-accent/[0.07] blur-[120px]"
+            />
+
             <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 className="relative mb-12"
             >
-                {/* Animated Rings */}
-                <motion.div
-                    className="absolute -inset-8 rounded-full border border-[#22C5C5]/10"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1.5, opacity: 0 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-                />
-                <motion.div
-                    className="absolute -inset-8 rounded-full border border-[#22C5C5]/10"
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1.5, opacity: 0 }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 0.5, ease: "easeOut" }}
-                />
+                {/* Two teal rings breathing outward, ~2s apart. */}
+                {!reduceMotion &&
+                    [0, 0.5].map((delay) => (
+                        <motion.div
+                            key={delay}
+                            aria-hidden="true"
+                            className="absolute -inset-8 rounded-full border border-tafc-accent/25"
+                            initial={{ scale: 0.85, opacity: 0.5 }}
+                            animate={{ scale: 1.5, opacity: 0 }}
+                            transition={{ duration: 2, repeat: Infinity, delay, ease: "easeOut" }}
+                        />
+                    ))}
 
-                {/* Glow Effect */}
-                <div className="absolute inset-0 bg-[#22C5C5]/20 blur-3xl rounded-full" />
-
-                {/* Logo Container */}
-                <div className="relative w-28 h-28 sm:w-32 sm:h-32 bg-white rounded-3xl flex items-center justify-center border border-slate-200 shadow-[0_10px_40px_rgba(0,0,0,0.05)]">
-                    <img
+                <div className="relative flex size-28 items-center justify-center rounded-3xl bg-white shadow-[0_24px_60px_-24px_rgba(0,0,0,0.6)] sm:size-32">
+                    <Image
                         src="/logo.png"
                         alt="TAFC"
-                        className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+                        width={96}
+                        height={96}
+                        priority
+                        className="size-20 object-contain sm:size-24"
                     />
                 </div>
             </motion.div>
 
-            {/* Brand Name */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.8 }}
-                className="text-center z-10"
+                transition={{ delay: 0.3, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                className="relative z-10 text-center"
             >
-                <h1 className="text-3xl font-bold text-[#042635] tracking-tight mb-2 font-sora">TAFC</h1>
-                <div className="h-px w-12 bg-gradient-to-r from-transparent via-[#22C5C5] to-transparent mx-auto mb-2" />
-                <p className="text-sm text-slate-500 font-medium tracking-[0.2em] uppercase">Premium Seafood</p>
+                <p className="font-display text-3xl font-bold tracking-tight text-white">TAFC</p>
+                <div
+                    aria-hidden="true"
+                    className="mx-auto my-3 h-px w-12 bg-gradient-to-r from-transparent via-tafc-accent to-transparent"
+                />
+                <p className="text-eyebrow text-tafc-accent uppercase">Premium Seafood</p>
             </motion.div>
         </div>
     )
 }
 
-// Page Loading Skeleton
+/**
+ * Generic page fallback. The route-level `loading.tsx` files are the ones the
+ * router actually renders; this is kept as a neutral catch-all.
+ */
 export function PageLoadingSkeleton() {
     return (
-        <div className="min-h-screen bg-slate-50">
-            {/* Header Skeleton */}
-            <div className="h-20 bg-white border-b border-slate-200 px-6 flex items-center justify-between">
-                <div className="w-24 h-8 bg-slate-200 rounded animate-pulse" />
+        <div className="min-h-screen bg-tafc-shell">
+            <div className="flex h-20 items-center justify-between border-b border-tafc-ink/[0.06] bg-white px-6">
+                <SkeletonBar className="h-8 w-24" />
                 <div className="flex gap-6">
                     {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="w-16 h-4 bg-slate-200 rounded animate-pulse" />
+                        <SkeletonBar key={i} className="h-4 w-16" />
                     ))}
                 </div>
             </div>
 
-            {/* Content Skeleton */}
-            <div className="max-w-7xl mx-auto px-6 py-12">
-                {/* Hero Skeleton */}
-                <div className="h-[400px] bg-slate-200 rounded-2xl mb-12 animate-pulse" />
-
-                {/* Grid Skeleton */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="container-tafc section-y-tight">
+                <SkeletonBar className="mb-12 h-[25rem] rounded-2xl" />
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                     {[1, 2, 3, 4, 5, 6].map((i) => (
                         <div key={i} className="space-y-4">
-                            <div className="aspect-[4/3] bg-slate-200 rounded-xl animate-pulse" />
-                            <div className="space-y-2">
-                                <div className="h-4 w-3/4 bg-slate-200 rounded animate-pulse" />
-                                <div className="h-4 w-1/2 bg-slate-200 rounded animate-pulse" />
-                            </div>
+                            <SkeletonBar className="aspect-[4/5] rounded-2xl" />
+                            <SkeletonBar className="h-4 w-3/4" />
+                            <SkeletonBar className="h-4 w-1/2" />
                         </div>
                     ))}
                 </div>

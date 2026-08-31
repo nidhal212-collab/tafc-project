@@ -1,14 +1,13 @@
 "use client"
 
-import { memo } from "react"
-import Link from "next/link"
-import { motion } from "framer-motion"
-import { MapPin, Snowflake, Box, ArrowRight, FileText } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ImageWithSkeleton } from "@/components/ui/image-with-skeleton"
-import type { Product, TranslatedProduct } from "@/lib/products-data"
 import { useTranslations } from "next-intl"
+import { Link } from "@/i18n/navigation"
+import { ArrowRight, FileText } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Reveal } from "@/components/ui/reveal"
+import { ImageWithSkeleton } from "@/components/ui/image-with-skeleton"
+import { SpecChips } from "@/components/ui/spec-chips"
+import type { Product, TranslatedProduct } from "@/lib/products-data"
 
 interface ProductCardProps {
   product: Product | TranslatedProduct
@@ -17,7 +16,28 @@ interface ProductCardProps {
 
 const whatsappNumber = "+21698621128"
 
+/** "frais-congele" → "Frais & congele". Presentation only; the data is untouched. */
+function formatType(type?: string) {
+  if (!type) return undefined
+  const spaced = type.replace("-", " & ")
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1)
+}
 
+/**
+ * The one product card, used on the homepage, the listing page and the related
+ * rail.
+ *
+ * Three changes carry most of the premium shift:
+ * 1. **Portrait `4/5` crop** instead of `4/3`. Every exporter studied frames
+ *    product photography portrait or 2:3 — landscape tiles read as e-commerce.
+ * 2. **Whole card is one target.** A stretched absolute anchor covers the card,
+ *    so the image, name and "view product" row all activate the same link
+ *    without nesting anchors. The WhatsApp quote sits above it as the single
+ *    competing action.
+ * 3. **Spec chips.** Origin / chilled-frozen / caliber surfaced at card level —
+ *    none of the seven leading exporters does this, and TAFC already stores the
+ *    fields, so a buyer can qualify a product without opening it.
+ */
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const t = useTranslations("productsData.ui")
   const tNav = useTranslations("nav")
@@ -27,108 +47,91 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   )
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.05, duration: 0.4 }}
-      className="group h-full"
-    >
-      <div className="h-full flex flex-col bg-white rounded-xl border border-slate-200 overflow-hidden hover:border-[#22C5C5]/30 hover:shadow-lg transition-all duration-300">
-        {/* Image Section */}
-        <Link href={`/products/${product.slug}`} className="block relative">
-          <div className="aspect-[4/3] relative overflow-hidden bg-slate-100">
-            <ImageWithSkeleton
-              src={product.image || "/placeholder.svg"}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
-            {/* Overlay Gradient on Hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-            {/* Top Badges */}
-            <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-              {product.tags.includes("Premium") && (
-                <Badge className="bg-[#042635] text-white border-0 hover:bg-[#042635]">Premium</Badge>
-              )}
-              {product.tags.includes("Export") && (
-                <Badge className="bg-[#22C5C5] text-[#042635] border-0 hover:bg-[#22C5C5] font-bold">Export</Badge>
-              )}
-            </div>
-          </div>
+    <Reveal as="article" delay={index * 0.06} y={20} duration={0.6} className="group h-full">
+      <div className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-tafc-ink/10 bg-white transition-[border-color,box-shadow] duration-500 hover:border-tafc-accent/45 hover:shadow-[0_26px_60px_-34px_rgba(4,38,53,0.45)]">
+        {/* Stretched anchor: whole-card target, no nested links. */}
+        <Link
+          href={`/products/${product.slug}`}
+          className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tafc-accent"
+        >
+          <span className="sr-only">{product.name}</span>
         </Link>
 
-        {/* Content Section */}
-        <div className="flex-1 p-5 flex flex-col">
-          <div className="flex-1">
-            {/* Latin Name */}
-            {product.latinName && (
-              <p className="text-xs text-slate-500 italic mb-1 font-serif">{product.latinName}</p>
+        {/* ---- Image --------------------------------------------------- */}
+        <div className="relative aspect-[4/5] overflow-hidden bg-tafc-shell">
+          <ImageWithSkeleton
+            src={product.image || "/placeholder.svg"}
+            alt={product.name}
+            fill
+            className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-tafc-ink/55 via-tafc-ink/5 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-95"
+          />
+
+          <div className="absolute inset-x-4 top-4 flex flex-wrap gap-2">
+            {product.tags.includes("Premium") && (
+              <span className="rounded-full bg-tafc-ink/90 px-2.5 py-1 text-eyebrow text-white uppercase backdrop-blur-sm">
+                Premium
+              </span>
             )}
-
-            {/* Product Name */}
-            <Link href={`/products/${product.slug}`} className="block group-hover:text-[#22C5C5] transition-colors">
-              <h3 className="text-lg font-bold text-slate-900 mb-3 leading-tight">{product.name}</h3>
-            </Link>
-
-            {/* Specs Grid */}
-            <div className="grid grid-cols-2 gap-x-2 gap-y-3 mb-4 text-sm">
-              <div className="flex items-center gap-2 text-slate-600">
-                <MapPin className="w-4 h-4 text-[#22C5C5] shrink-0" />
-                <span className="truncate">{product.origin}</span>
-              </div>
-
-              <div className="flex items-center gap-2 text-slate-600">
-                <Snowflake className="w-4 h-4 text-[#22C5C5] shrink-0" />
-                <span className="truncate capitalize">{product.type.replace("-", " & ")}</span>
-              </div>
-
-              {product.formats && product.formats.length > 0 && (
-                <div className="col-span-2 flex items-center gap-2 text-slate-600">
-                  <Box className="w-4 h-4 text-[#22C5C5] shrink-0" />
-                  <span className="truncate text-xs text-slate-500">
-                    {product.formats.slice(0, 2).join(" • ")}
-                    {product.formats.length > 2 && "..."}
-                  </span>
-                </div>
-              )}
-            </div>
+            {product.tags.includes("Export") && (
+              <span className="rounded-full bg-tafc-accent px-2.5 py-1 text-eyebrow text-tafc-ink uppercase">
+                Export
+              </span>
+            )}
           </div>
+        </div>
 
-          {/* Actions */}
-          <div className="pt-4 mt-auto border-t border-slate-100 grid grid-cols-2 gap-3">
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="w-full border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-[#042635] hover:border-[#042635]/20 font-medium"
-            >
-              <Link href={`/products/${product.slug}`}>
-                {t("viewProduct")}
-              </Link>
-            </Button>
+        {/* ---- Content ------------------------------------------------- */}
+        <div className="flex flex-1 flex-col p-5">
+          {product.latinName && (
+            <p className="mb-1.5 font-serif text-meta text-tafc-ink/45 italic">
+              {product.latinName}
+            </p>
+          )}
 
-            <Button
-              asChild
-              size="sm"
-              className="w-full bg-[#042635] hover:bg-[#063a4f] text-white shadow-sm hover:shadow"
-            >
+          <h3 className="font-display text-h3 text-tafc-ink transition-colors duration-300 group-hover:text-tafc-accent">
+            {product.name}
+          </h3>
+
+          <SpecChips
+            product={{
+              origin: product.origin,
+              type: formatType(product.type),
+              caliber: product.caliber,
+              formats: product.formats,
+            }}
+            className="mt-4"
+          />
+
+          {/* ---- Actions ----------------------------------------------- */}
+          <div className="mt-auto flex items-center justify-between gap-3 border-t border-tafc-ink/[0.07] pt-5">
+            {/* Visual affordance only — the stretched card anchor handles it,
+                which keeps a single target per card. */}
+            <span className="inline-flex items-center gap-1.5 text-meta font-medium text-tafc-ink/60 transition-colors duration-300 group-hover:text-tafc-accent">
+              {t("viewProduct")}
+              <ArrowRight
+                aria-hidden="true"
+                className="size-3.5 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
+              />
+            </span>
+
+            <Button asChild variant="ink" size="sm" className="relative z-20 rounded-full">
               <a
                 href={`https://wa.me/${whatsappNumber}?text=${whatsappMessage}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2"
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText aria-hidden="true" className="size-3.5" />
                 <span>{t("requestQuote")}</span>
               </a>
             </Button>
           </div>
         </div>
       </div>
-    </motion.div>
+    </Reveal>
   )
 }
-

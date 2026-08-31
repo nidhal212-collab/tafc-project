@@ -1,192 +1,221 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { useTranslations, useMessages } from 'next-intl'
-import { getBestSellers, getTranslatedProduct, type ProductsDataTranslations } from "@/lib/products-data"
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { EffectCoverflow, Pagination, Autoplay, Mousewheel, Navigation } from 'swiper/modules'
+import { useRef } from "react"
+import { useTranslations, useMessages, useLocale } from "next-intl"
+import { Link } from "@/i18n/navigation"
 import Image from "next/image"
-import Link from "next/link"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import {
+  getBestSellers,
+  getTranslatedProduct,
+  type TranslatedProduct,
+  type ProductsDataTranslations,
+} from "@/lib/products-data"
+import { SectionShell } from "@/components/ui/section-shell"
+import { SectionIntro } from "@/components/ui/section-intro"
+import { Reveal } from "@/components/ui/reveal"
+import { DataLabel } from "@/components/ui/spec"
 
-import 'swiper/css'
-import 'swiper/css/effect-coverflow'
-import 'swiper/css/pagination'
-import 'swiper/css/navigation'
+/** The three products the old hero carried on its rotated floating cards. */
+const FEATURED_KEYS = ["seaBass", "seaBream", "prawns"] as const
 
+/**
+ * Featured-selection rail — the second of the three product showcases.
+ *
+ * Swiper is gone from this section. It carried an autoplay loop, a pagination
+ * row, a `<style jsx global>` block patching its own CSS, and three stylesheet
+ * imports, to deliver a horizontal list of five cards. That is now native
+ * scroll-snap (`.rail` in globals.css): no JS driving the scroll, keyboard- and
+ * trackpad-scrollable by default, and it respects `prefers-reduced-motion`
+ * through the existing global rule instead of a second opt-out.
+ *
+ * Structurally the section is a sticky header beside a rail that bleeds off the
+ * viewport edge, rather than a centred header above a contained carousel. The
+ * bleed is what tells a reader there is more to the right; the old pagination
+ * bullets were doing that job in a much weaker way.
+ *
+ * The three strings from the old hero's floating product cards live in the
+ * sticky column, where they read as a contents list for the rail beside them.
+ *
+ * Cards are navy against the shell surface and carry a real spec table — origin,
+ * chilled/frozen, caliber, pack format — so this section cannot be confused with
+ * either the ranges index above or the white catalogue cards below.
+ */
 export function BestSellers() {
-  const t = useTranslations('bestSellers')
+  const t = useTranslations("bestSellers")
+  const tHero = useTranslations("hero")
+  const tUi = useTranslations("productsData.ui")
   const messages = useMessages()
-  const rawBestSellers = getBestSellers()
+  const locale = useLocale()
+  const isRTL = locale === "ar"
+  const translations = messages.productsData as unknown as ProductsDataTranslations
 
-  // Duplicate the list to ensure we have enough slides for the loop to work smoothly
-  const loopedBestSellers = [...rawBestSellers, ...rawBestSellers, ...rawBestSellers]
+  const railRef = useRef<HTMLUListElement>(null)
 
-  const bestSellers = loopedBestSellers.map((product, index) => {
-    const translations = (messages.productsData as unknown) as ProductsDataTranslations
-    const translated = getTranslatedProduct(product, translations)
-    return { ...translated, uniqueId: `${product.id}-${index}` }
-  })
+  const bestSellers = getBestSellers().map((product) =>
+    getTranslatedProduct(product, translations)
+  )
+
+  // Accent the second word of the title, as the previous build did.
+  const titleWords = t("title").split(" ")
+
+  /**
+   * One card per press. `scrollBy` takes a physical offset, so "next" is a
+   * leftward move in RTL — hence the sign flip rather than a logical property.
+   */
+  const scrollByCard = (direction: 1 | -1) => {
+    const rail = railRef.current
+    if (!rail) return
+    const card = rail.firstElementChild as HTMLElement | null
+    const step = card ? card.offsetWidth + 20 : rail.clientWidth * 0.8
+    rail.scrollBy({ left: step * direction * (isRTL ? -1 : 1), behavior: "smooth" })
+  }
+
+  /** Up to four spec entries per card, in the order a buyer reads them. */
+  const specsFor = (product: TranslatedProduct) =>
+    [
+      product.origin && { label: tUi("origin"), value: product.origin },
+      product.type && { label: tUi("type"), value: product.type },
+      product.caliber && { label: tUi("caliber"), value: product.caliber },
+      product.formats?.[0] && { label: tUi("packaging"), value: product.formats[0] },
+    ].filter((spec): spec is { label: string; value: string } => Boolean(spec))
 
   return (
-    <section className="relative py-24 md:py-32 bg-[#F0F4F8] overflow-hidden">
-      {/* CSS to handle the active slide ribbon visibility and Custom Navigation */}
-      <style jsx global>{`
-        .swiper-slide-active .best-seller-ribbon {
-          opacity: 1;
-          transform: translateY(0) scale(1);
-        }
-        .swiper-button-next, .swiper-button-prev {
-          color: #1B365D;
-          background: rgba(255, 255, 255, 0.8);
-          backdrop-filter: blur(4px);
-          width: 48px;
-          height: 48px;
-          border-radius: 50%;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          transition: all 0.3s ease;
-        }
-        .swiper-button-next:after, .swiper-button-prev:after {
-          font-size: 20px;
-          font-weight: bold;
-        }
-        .swiper-button-next:hover, .swiper-button-prev:hover {
-          background: white;
-          transform: scale(1.1);
-          box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
-        .swiper-pagination-bullet-active {
-          background: #1B365D !important;
-        }
-      `}</style>
+    <SectionShell tone="shell" contained={false}>
+      {/* `lg:pe-0` drops the container's end gutter so the rail runs off the
+          viewport edge, while the sticky column keeps its start gutter. */}
+      <div className="container-tafc lg:pe-0">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
+          {/* ---- Sticky header -------------------------------------------- */}
+          <div className="lg:col-span-4">
+            <div className="lg:sticky lg:top-28">
+              <SectionIntro
+                eyebrow={t("badge")}
+                title={
+                  <>
+                    {titleWords.map((word, i) => (
+                      <span
+                        key={`${word}-${i}`}
+                        className={i === 1 ? "text-tafc-accent" : undefined}
+                      >
+                        {word}
+                        {i < titleWords.length - 1 ? " " : ""}
+                      </span>
+                    ))}
+                  </>
+                }
+                deck={t("description")}
+              />
 
-      {/* Background Decorative Elements */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-white/40 to-transparent rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3" />
-      <div className="absolute bottom-0 left-0 w-full h-[600px] pointer-events-none z-0 opacity-[0.4]">
-        <svg viewBox="0 0 1440 600" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-slate-200/50">
-          <path d="M0 600V400C200 450 400 300 600 350C800 400 1000 200 1200 250C1400 300 1440 100 1440 0V600H0Z" fill="currentColor" />
-        </svg>
-      </div>
+              {/* Contents list for the rail — the copy the old hero carried on
+                  its floating cards. */}
+              <Reveal delay={0.1} className="mt-10">
+                <DataLabel>{tHero("featuredSelection")}</DataLabel>
+                <ul className="mt-4 border-t border-tafc-ink/[0.12]">
+                  {FEATURED_KEYS.map((key) => (
+                    <li
+                      key={key}
+                      className="flex items-start justify-between gap-4 border-b border-tafc-ink/[0.12] py-3.5"
+                    >
+                      <span className="min-w-0">
+                        <span className="block font-display text-[0.9375rem] font-semibold text-tafc-ink">
+                          {tHero(`products.${key}.name`)}
+                        </span>
+                        <span className="mt-0.5 block text-meta text-tafc-ink/45">
+                          {tHero(`products.${key}.subtitle`)}
+                        </span>
+                      </span>
+                      <span className="shrink-0 font-mono text-data text-tafc-ink/45 uppercase">
+                        {tHero(`products.${key}.badge`)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
 
-      {/* Geometric Accents */}
-      <div className="absolute top-20 left-[10%] w-24 h-24 border-4 border-white/20 rounded-full pointer-events-none animate-[spin_10s_linear_infinite]" />
-      <div className="absolute bottom-40 right-[5%] w-16 h-16 border-4 border-tafc-gold-light/10 rotate-45 pointer-events-none" />
-
-      <div className="relative max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-20 px-4"
-        >
-          <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-4 md:mb-6 tracking-tight relative inline-flex flex-col md:flex-row items-center gap-2 md:gap-3">
-            <span className="block md:inline-block relative">
-              {t('title').split(' ').map((word, i) => (
-                <span key={i} className={i === 1 ? "text-tafc-blue-dark relative" : ""}>
-                  {word}{" "}
-                </span>
-              ))}
-            </span>
-            <Image
-              src="/icons8-best-seller-94.png"
-              alt="Best Seller"
-              width={48}
-              height={48}
-              className="w-10 h-10 md:w-12 md:h-12 inline-block"
-            />
-          </h2>
-
-          <div className="flex flex-col items-center gap-6">
-            <div className="w-24 h-[2px] bg-gradient-to-r from-transparent via-tafc-gold to-transparent opacity-40" />
-            <p className="text-xl md:text-2xl text-slate-600 font-light max-w-3xl mx-auto leading-relaxed italic">
-              {t('description')}
-            </p>
+              {/* Rail controls. Scrolling works without them — these are the
+                  affordance, not the only route. */}
+              <div className="mt-8 flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => scrollByCard(-1)}
+                  aria-label={t("previousSlide")}
+                  className="inline-flex size-11 items-center justify-center rounded-full border border-tafc-ink/[0.12] bg-white text-tafc-ink transition hover:border-tafc-accent hover:text-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/40 focus-visible:outline-none"
+                >
+                  <ChevronLeft aria-hidden="true" className="size-5 rtl:rotate-180" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollByCard(1)}
+                  aria-label={t("nextSlide")}
+                  className="inline-flex size-11 items-center justify-center rounded-full border border-tafc-ink/[0.12] bg-white text-tafc-ink transition hover:border-tafc-accent hover:text-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/40 focus-visible:outline-none"
+                >
+                  <ChevronRight aria-hidden="true" className="size-5 rtl:rotate-180" />
+                </button>
+              </div>
+            </div>
           </div>
-        </motion.div>
 
-        <div className="w-full py-4 relative">
-          <Swiper
-            effect={'coverflow'}
-            grabCursor={true}
-            centeredSlides={true}
-            slidesPerView={'auto'}
-            loop={true}
-            speed={600}
-            mousewheel={{
-              forceToAxis: true,
-            }}
-            autoplay={{
-              delay: 3000,
-              disableOnInteraction: false,
-              pauseOnMouseEnter: true,
-            }}
-            navigation={true}
-            coverflowEffect={{
-              rotate: 35,
-              stretch: 0,
-              depth: 150,
-              scale: 0.85,
-              modifier: 1,
-              slideShadows: false,
-            }}
-            pagination={{ clickable: true }}
-            modules={[EffectCoverflow, Pagination, Autoplay, Mousewheel, Navigation]}
-            className="mySwiper !pb-14 !px-4"
-          >
-            {bestSellers.map((product) => (
-              <SwiperSlide key={product.uniqueId} className="!w-[280px] sm:!w-[350px] md:!w-[350px]">
-                <Link href={`/products/${product.slug}`} className="block group relative">
-
-                  {/* Floating 'Best Seller' Ribbon - Visible only on Active Slide via CSS */}
-                  <div className="best-seller-ribbon absolute -top-3 left-1/2 -translate-x-1/2 z-30 opacity-0 translate-y-4 scale-75 transition-all duration-500 ease-out pointer-events-none">
-                    <div className="bg-tafc-gold text-white text-[10px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full shadow-[0_8px_16px_rgba(234,179,8,0.3)] flex items-center gap-1.5 border border-white/20 backdrop-blur-sm">
-                      <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                      Best Seller
-                    </div>
-                  </div>
-
-                  <div className="relative aspect-[3/4] rounded-[24px] overflow-hidden bg-white shadow-[0_10px_30px_rgba(0,0,0,0.06)] transition-all duration-500 ease-out group-hover:shadow-[0_25px_50px_rgba(0,0,0,0.1)] group-hover:-translate-y-3 ring-1 ring-black/5">
-
-                    {/* Image Container */}
-                    <div className="relative w-full h-full overflow-hidden">
+          {/* ---- Rail ----------------------------------------------------- */}
+          <div className="lg:col-span-8">
+            <ul
+              ref={railRef}
+              className="rail scrollbar-hide -mx-6 gap-5 px-6 pb-2 scroll-ps-6 lg:mx-0 lg:ps-0 lg:scroll-ps-0"
+            >
+              {bestSellers.map((product) => (
+                <li key={product.id} className="w-[78vw] sm:w-[22rem]">
+                  <Link
+                    href={`/products/${product.slug}`}
+                    className="group flex h-full flex-col overflow-hidden rounded-2xl bg-tafc-ink ring-1 ring-tafc-ink/10 transition duration-500 hover:ring-tafc-accent/50 hover:shadow-[0_28px_64px_-34px_rgba(4,38,53,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tafc-accent"
+                  >
+                    <div className="relative aspect-[4/5] shrink-0">
                       <Image
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
                         fill
-                        className="object-cover transition-transform duration-700 ease-in-out"
-                        sizes="(max-width: 768px) 280px, 400px"
+                        sizes="(max-width: 640px) 78vw, 22rem"
+                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-black/10 transition-opacity duration-300 group-hover:from-slate-900/90" />
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-gradient-to-t from-tafc-ink/70 via-transparent to-transparent"
+                      />
+                      <span className="absolute start-4 top-4 rounded-full bg-tafc-accent px-2.5 py-1 font-mono text-data text-tafc-ink uppercase">
+                        {t("badge")}
+                      </span>
                     </div>
 
-                    {/* Star Rating Overlay */}
-                    <div className="absolute top-4 right-4 flex gap-0.5 z-20 bg-white/10 backdrop-blur-md px-2 py-1 rounded-full border border-white/10">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg key={star} className="w-3.5 h-3.5 text-amber-400 drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                        </svg>
-                      ))}
-                    </div>
-
-                    {/* Content */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-20 transform transition-transform duration-300">
-                      <h3 className="text-2xl font-bold text-white text-center mb-2 drop-shadow-md leading-tight group-hover:text-tafc-gold-light transition-colors">
+                    <div className="flex flex-1 flex-col p-6">
+                      {product.latinName && (
+                        <p className="mb-1.5 font-serif text-meta text-white/40 italic">
+                          {product.latinName}
+                        </p>
+                      )}
+                      <h3 className="font-display text-h3 text-white transition-colors duration-300 group-hover:text-tafc-accent">
                         {product.name}
                       </h3>
 
-                      {/* Decorative Line */}
-                      <div className="w-12 h-1 bg-white/30 rounded-full mx-auto backdrop-blur-sm overflow-hidden">
-                        <div className="w-full h-full bg-tafc-gold origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
-                      </div>
+                      {/* Spec table. The catalogue voice, in the mono face. */}
+                      <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3.5 border-t border-tafc-ink-line pt-5">
+                        {specsFor(product).map((spec) => (
+                          <div key={spec.label} className="min-w-0">
+                            <dt>
+                              <DataLabel tone="ink">{spec.label}</DataLabel>
+                            </dt>
+                            <dd className="mt-1 truncate text-meta font-medium text-white/85">
+                              {spec.value}
+                            </dd>
+                          </div>
+                        ))}
+                      </dl>
                     </div>
-
-                  </div>
-                </Link>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
-    </section>
+    </SectionShell>
   )
 }

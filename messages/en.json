@@ -25,6 +25,14 @@
     "ctaPrimary": "Discover our products",
     "ctaSecondary": "Learn more about us",
     "featuredSelection": "Featured selection",
+    "manifest": {
+      "origin": "Origin",
+      "originValue": "Tunisia · Algeria",
+      "ranges": "Ranges",
+      "references": "References",
+      "coldChain": "Cold chain",
+      "coldChainValue": "Chilled / Frozen"
+    },
     "products": {
       "seaBass": {
         "name": "Sea Bass",
@@ -125,6 +133,7 @@
     "badge": "Our catalog",
     "title": "A preview of our catalog",
     "description": "Discover some of our flagship references before exploring all products.",
+    "references": "References",
     "viewAll": "View full catalog"
   },
 
@@ -134,6 +143,11 @@
     "description": "Tell us what type of establishment you are, your volumes, your delivery frequencies... Our team will help you define your supply.",
     "cta": "Contact the team",
     "location": "Based in Tunisia & Algeria",
+    "channels": {
+      "email": "Email",
+      "phone": "Phone",
+      "based": "Locations"
+    },
     "mapTitle": "TAFC Location - Tunisia & Algeria"
   },
 

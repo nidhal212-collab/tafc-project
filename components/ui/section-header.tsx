@@ -1,28 +1,40 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { SectionIntro } from "@/components/ui/section-intro"
+import type { SectionTone } from "@/components/ui/section-shell"
 
 interface SectionHeaderProps {
   title: string
   description?: string
+  tone?: SectionTone
+  align?: "start" | "center"
+  eyebrow?: string
   className?: string
 }
 
-export function SectionHeader({ title, description, className = "" }: SectionHeaderProps) {
+/**
+ * Thin compatibility wrapper over {@link SectionIntro}.
+ *
+ * Kept so existing call sites (`app/[locale]/products/page.tsx`) keep working,
+ * but it no longer carries its own type sizes or the hardcoded `#22C5C5`
+ * underline bar — everything routes through the one shared recipe.
+ */
+export function SectionHeader({
+  title,
+  description,
+  tone = "light",
+  align = "start",
+  eyebrow,
+  className = "",
+}: SectionHeaderProps) {
   return (
-    <div className={`mb-8 ${className}`}>
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        whileInView={{ opacity: 1, x: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-      >
-        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2 relative inline-block">
-          {title}
-          <span className="absolute -bottom-1 left-0 w-1/3 h-1 bg-[#22C5C5] rounded-full"></span>
-        </h2>
-        {description && <p className="text-slate-500 max-w-2xl mt-2">{description}</p>}
-      </motion.div>
-    </div>
+    <SectionIntro
+      eyebrow={eyebrow}
+      title={title}
+      deck={description}
+      tone={tone}
+      align={align}
+      className={className}
+    />
   )
 }

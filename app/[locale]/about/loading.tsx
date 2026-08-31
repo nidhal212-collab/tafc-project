@@ -1,98 +1,101 @@
+import { Header } from "@/components/layout/header"
+import { Footer } from "@/components/layout/footer"
+import { SkeletonBar, SkeletonBarInk } from "@/components/ui/skeleton-bar"
+
+/**
+ * About fallback.
+ *
+ * This file used to hand-roll its own fake header and footer instead of
+ * importing the real ones — the only route that did, so its shell disagreed with
+ * every other page. It uses the actual `Header` / `Footer` now, which also means
+ * the nav does not visibly rebuild when the page resolves.
+ */
 export default function AboutLoading() {
-    return (
-        <>
-            {/* Simple Header Skeleton */}
-            <header className="fixed top-0 left-0 right-0 z-50 h-20 bg-white/80 backdrop-blur-lg border-b border-slate-200/50">
-                <div className="container mx-auto px-6 h-full flex items-center justify-between">
-                    <div className="w-32 h-10 bg-slate-200 rounded animate-pulse" />
-                    <div className="hidden md:flex gap-6">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="w-16 h-4 bg-slate-200 rounded animate-pulse" />
-                        ))}
-                    </div>
-                    <div className="w-24 h-10 bg-slate-200 rounded-full animate-pulse" />
+  return (
+    <>
+      <Header />
+      <main className="min-h-screen bg-white">
+        {/* Hero — same `85vh` / `95vh` as the real parallax section. */}
+        <section className="relative flex h-[85vh] w-full items-center justify-center overflow-hidden bg-tafc-ink md:h-[95vh]">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-1/2 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-tafc-accent/[0.07] blur-[120px]"
+          />
+          <div className="container-tafc relative z-10 mt-16 text-center md:mt-0">
+            <div className="mx-auto max-w-2xl space-y-5">
+              <SkeletonBarInk className="mx-auto h-14 w-3/4 md:h-24" />
+              <SkeletonBarInk className="mx-auto h-12 w-1/2 bg-tafc-accent/15 md:h-20" />
+              <div className="space-y-2 pt-6">
+                <SkeletonBarInk className="mx-auto h-4 w-full max-w-md" />
+                <SkeletonBarInk className="mx-auto h-4 w-2/3" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="space-y-24 bg-white pt-20 pb-24 md:space-y-36 md:pt-32">
+          {/* Presentation — editorial left/right. */}
+          <section className="container-tafc">
+            <div className="flex flex-col items-center gap-14 lg:flex-row lg:gap-24">
+              <div className="w-full flex-1 space-y-6">
+                <SkeletonBar className="h-3 w-32 rounded-full" />
+                <div className="space-y-3">
+                  <SkeletonBar className="h-11 w-3/4" />
+                  <SkeletonBar className="h-11 w-1/2" />
                 </div>
-            </header>
-
-            <main className="bg-white min-h-screen">
-                {/* Hero Skeleton */}
-                <section className="relative h-[85vh] md:h-[95vh] w-full overflow-hidden flex items-center justify-center bg-[#0a192f]">
-                    <div className="absolute inset-0 bg-gradient-to-b from-[#0a192f]/50 to-[#020c1b] z-10" />
-
-                    <div className="relative z-10 container mx-auto px-6 lg:px-12 text-center mt-16 md:mt-0">
-                        <div className="space-y-6 max-w-2xl mx-auto">
-                            {/* Title Skeleton */}
-                            <div className="space-y-4">
-                                <div className="h-16 md:h-24 w-3/4 mx-auto bg-white/10 rounded animate-pulse" />
-                                <div className="h-12 md:h-20 w-1/2 mx-auto bg-[#22C5C5]/20 rounded animate-pulse" />
-                            </div>
-
-                            {/* Subtitle Skeleton */}
-                            <div className="space-y-2 pt-4">
-                                <div className="h-5 w-full bg-white/5 rounded animate-pulse" />
-                                <div className="h-5 w-2/3 mx-auto bg-white/5 rounded animate-pulse" />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Content Sections Skeleton */}
-                <div className="pt-16 md:pt-32 pb-20 bg-white space-y-20 md:space-y-32">
-                    {/* Section 1 Skeleton */}
-                    <section className="container mx-auto px-6 lg:px-12">
-                        <div className="flex flex-col lg:flex-row gap-12 lg:gap-32 items-center">
-                            <div className="flex-1 space-y-6">
-                                <div className="w-32 h-6 bg-[#22C5C5]/10 rounded-full animate-pulse" />
-                                <div className="space-y-3">
-                                    <div className="h-12 w-3/4 bg-slate-200 rounded animate-pulse" />
-                                    <div className="h-12 w-1/2 bg-slate-200 rounded animate-pulse" />
-                                </div>
-                                <div className="w-20 h-1.5 bg-slate-300 rounded animate-pulse" />
-                                <div className="space-y-3">
-                                    <div className="h-6 w-full bg-slate-100 rounded animate-pulse" />
-                                    <div className="h-6 w-4/5 bg-slate-100 rounded animate-pulse" />
-                                </div>
-                            </div>
-                            <div className="flex-1">
-                                <div className="aspect-[3/4] w-full max-w-md mx-auto bg-slate-200 rounded-sm shadow-2xl animate-pulse" />
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* Values Section Skeleton */}
-                    <section className="py-24 md:py-32 bg-[#050A14]">
-                        <div className="container mx-auto px-6 lg:px-12 mb-16">
-                            <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-                                <div className="h-12 w-48 bg-white/10 rounded animate-pulse" />
-                                <div className="h-5 w-64 bg-white/5 rounded animate-pulse" />
-                            </div>
-                        </div>
-                        <div className="container mx-auto px-4 lg:px-12 h-[600px] flex flex-col md:flex-row gap-4">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="flex-1 bg-white/5 rounded-3xl animate-pulse" />
-                            ))}
-                        </div>
-                    </section>
+                <div className="space-y-3 pt-2">
+                  <SkeletonBar className="h-4 w-full" />
+                  <SkeletonBar className="h-4 w-5/6" />
+                  <SkeletonBar className="h-4 w-4/6" />
                 </div>
-            </main>
-
-            {/* Simple Footer Skeleton */}
-            <footer className="bg-[#042635] py-16">
-                <div className="container mx-auto px-6">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className="space-y-4">
-                                <div className="w-24 h-6 bg-white/10 rounded animate-pulse" />
-                                <div className="space-y-2">
-                                    {[1, 2, 3].map((j) => (
-                                        <div key={j} className="w-full h-4 bg-white/5 rounded animate-pulse" />
-                                    ))}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                <div className="flex gap-8 border-t border-tafc-ink/[0.08] pt-7">
+                  <SkeletonBar className="h-3 w-28" />
+                  <SkeletonBar className="h-3 w-28" />
                 </div>
-            </footer>
-        </>
-    )
+              </div>
+              <div className="w-full flex-1">
+                <SkeletonBar className="mx-auto aspect-[3/4] w-full max-w-sm rounded-2xl md:max-w-md" />
+              </div>
+            </div>
+          </section>
+
+          {/* Mission & advantage — editorial right/left. */}
+          <section className="container-tafc">
+            <div className="flex flex-col items-center gap-14 lg:flex-row-reverse lg:gap-24">
+              <div className="w-full flex-1 space-y-12">
+                {[1, 2].map((i) => (
+                  <div key={i} className="space-y-5">
+                    <SkeletonBar className="h-9 w-2/3" />
+                    <div className="space-y-2">
+                      <SkeletonBar className="h-4 w-full" />
+                      <SkeletonBar className="h-4 w-4/5" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="w-full flex-1">
+                <SkeletonBar className="mx-auto aspect-square w-full max-w-sm rounded-2xl md:max-w-md" />
+              </div>
+            </div>
+          </section>
+
+          {/* Values — the expanding gallery band. */}
+          <section className="overflow-hidden bg-tafc-ink py-24 md:py-32">
+            <div className="container-tafc mb-16">
+              <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+                <SkeletonBarInk className="h-11 w-56" />
+                <SkeletonBarInk className="h-4 w-64" />
+              </div>
+            </div>
+            <div className="container-tafc flex h-[600px] flex-col gap-4 md:flex-row">
+              {[1, 2, 3].map((i) => (
+                <SkeletonBarInk key={i} className="h-[400px] flex-1 rounded-2xl md:h-full" />
+              ))}
+            </div>
+          </section>
+        </div>
+      </main>
+      <Footer />
+    </>
+  )
 }

@@ -1,131 +1,160 @@
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { SkeletonBar } from "@/components/ui/skeleton-bar"
 
+/**
+ * Product detail fallback.
+ *
+ * Two things were wrong beyond the palette: it drew a `bg-slate-900` "price
+ * block", and TAFC never shows prices — the page is quote-driven, so that block
+ * has no counterpart in the real view. And the breadcrumb rail was pinned to
+ * `top-[80px]` as a literal while the header is now `h-20`/`h-18`; both use
+ * `top-20` so they stay in sync.
+ */
 export default function ProductDetailLoading() {
-    return (
-        <>
-            <Header />
-            <div className="min-h-screen bg-slate-50/50">
-                {/* Desktop Sticky Nav Skeleton */}
-                <nav className="hidden md:block sticky top-[80px] z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center gap-2">
-                        <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
-                        <div className="h-4 w-4 bg-slate-100 rounded animate-pulse" />
-                        <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
-                        <div className="h-4 w-4 bg-slate-100 rounded animate-pulse" />
-                        <div className="h-4 w-32 bg-slate-300 rounded animate-pulse" />
-                    </div>
-                </nav>
+  return (
+    <>
+      <Header />
+      <div className="min-h-screen bg-tafc-shell">
+        {/* Breadcrumb rail. */}
+        <nav className="sticky top-20 z-30 hidden border-b border-tafc-ink/[0.08] bg-white/85 backdrop-blur-md md:block">
+          <div className="container-tafc flex h-12 items-center gap-3">
+            <SkeletonBar className="h-3 w-20" />
+            <SkeletonBar className="size-3" />
+            <SkeletonBar className="h-3 w-24" />
+            <SkeletonBar className="size-3" />
+            <SkeletonBar className="h-3 w-32" />
+          </div>
+        </nav>
 
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-16">
-                    <div className="grid lg:grid-cols-2 gap-8 lg:gap-20 items-start">
-                        {/* Left Column - Image Skeleton */}
-                        <div className="lg:sticky lg:top-32 h-fit space-y-4">
-                            {/* Main Image Skeleton */}
-                            <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-white shadow-xl border border-slate-100">
-                                <div className="absolute inset-0 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 animate-shimmer bg-[length:200%_100%]" />
-                                {/* Badge Skeletons */}
-                                <div className="absolute top-6 left-6 flex gap-2">
-                                    <div className="h-7 w-20 bg-white/90 rounded-full animate-pulse" />
-                                    <div className="h-7 w-16 bg-white/90 rounded-full animate-pulse" />
-                                </div>
-                            </div>
+        <main className="container-tafc py-8 md:py-16">
+          <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+            {/* Image column. */}
+            <div className="space-y-4 lg:sticky lg:top-36">
+              <div className="relative aspect-square overflow-hidden rounded-2xl bg-white ring-1 ring-tafc-ink/[0.08]">
+                <div className="absolute inset-0 animate-pulse bg-tafc-ink/[0.07]" />
+                <div className="absolute start-6 top-6 flex gap-2">
+                  <SkeletonBar className="h-6 w-20 rounded-full bg-tafc-ink/15" />
+                  <SkeletonBar className="h-6 w-16 rounded-full bg-tafc-ink/15" />
+                </div>
+              </div>
 
-                            {/* Specs Row Skeleton - Desktop Only */}
-                            <div className="hidden lg:grid grid-cols-3 gap-3">
-                                {[1, 2, 3].map(i => (
-                                    <div key={i} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="w-5 h-5 bg-slate-200 rounded animate-pulse" />
-                                            <div className="h-3 w-12 bg-slate-100 rounded animate-pulse" />
-                                            <div className="h-4 w-16 bg-slate-200 rounded animate-pulse" />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Right Column - Details Skeleton */}
-                        <div className="flex flex-col gap-6 md:gap-8 pt-0 md:pt-2">
-                            {/* Header Info Skeleton */}
-                            <div className="space-y-4">
-                                <div className="h-8 w-32 bg-teal-50 rounded-full animate-pulse" />
-                                <div className="space-y-3">
-                                    <div className="h-12 md:h-16 w-4/5 bg-slate-200 rounded animate-pulse" />
-                                    <div className="h-6 w-1/3 bg-slate-100 rounded animate-pulse" />
-                                </div>
-                            </div>
-
-                            {/* Description Skeleton */}
-                            <div className="space-y-2">
-                                <div className="h-5 w-full bg-slate-100 rounded animate-pulse" />
-                                <div className="h-5 w-5/6 bg-slate-100 rounded animate-pulse" />
-                                <div className="h-5 w-4/6 bg-slate-100 rounded animate-pulse" />
-                            </div>
-
-                            {/* Mobile Specs Skeleton */}
-                            <div className="grid grid-cols-2 gap-3 lg:hidden">
-                                {[1, 2].map(i => (
-                                    <div key={i} className="bg-white p-3.5 rounded-xl border border-slate-200/60 shadow-sm">
-                                        <div className="h-3 w-12 bg-slate-100 rounded animate-pulse mb-2" />
-                                        <div className="h-4 w-20 bg-slate-200 rounded animate-pulse" />
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Price Block Skeleton */}
-                            <div className="bg-slate-900 p-6 md:p-8 rounded-2xl md:rounded-3xl">
-                                <div className="h-3 w-24 bg-slate-700 rounded animate-pulse mb-2" />
-                                <div className="h-10 md:h-12 w-32 bg-slate-700 rounded animate-pulse" />
-                            </div>
-
-                            {/* Separator */}
-                            <div className="h-px bg-slate-200" />
-
-                            {/* Detailed Lists Skeleton */}
-                            <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-                                {[1, 2].map(col => (
-                                    <div key={col} className="space-y-4">
-                                        <div className="h-6 w-36 bg-slate-200 rounded animate-pulse" />
-                                        <div className="space-y-3">
-                                            {[1, 2, 3].map(i => (
-                                                <div key={i} className="h-12 bg-white border border-slate-100 rounded-xl animate-pulse" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Related Products Skeleton */}
-                    <section className="mt-16 md:mt-32 border-t border-slate-200 pt-10 md:pt-16">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="space-y-2">
-                                <div className="h-4 w-24 bg-teal-100 rounded animate-pulse" />
-                                <div className="h-8 w-32 bg-slate-200 rounded animate-pulse" />
-                            </div>
-                            <div className="h-9 w-20 bg-slate-100 rounded-lg animate-pulse" />
-                        </div>
-                        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                                    <div className="aspect-[4/3] bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 animate-shimmer bg-[length:200%_100%]" />
-                                    <div className="p-5 space-y-4">
-                                        <div className="h-3 w-20 bg-slate-100 rounded animate-pulse" />
-                                        <div className="h-5 w-3/4 bg-slate-200 rounded animate-pulse" />
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <div className="h-4 bg-slate-100 rounded animate-pulse" />
-                                            <div className="h-4 bg-slate-100 rounded animate-pulse" />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                </main>
+              {/* Origin / type panels. */}
+              <div className="hidden grid-cols-2 gap-3 lg:grid">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="space-y-2 rounded-xl border border-tafc-ink/[0.08] bg-white p-4"
+                  >
+                    <SkeletonBar className="h-3 w-14" />
+                    <SkeletonBar className="h-4 w-24" />
+                  </div>
+                ))}
+              </div>
             </div>
-            <Footer />
-        </>
-    )
+
+            {/* Detail column. */}
+            <div className="flex flex-col gap-8">
+              <div className="space-y-4">
+                <SkeletonBar className="h-3 w-28 rounded-full" />
+                <SkeletonBar className="h-12 w-4/5 md:h-16" />
+                <SkeletonBar className="h-5 w-1/3" />
+                <SkeletonBar className="h-3 w-24" />
+              </div>
+
+              <div className="space-y-2">
+                <SkeletonBar className="h-4 w-full" />
+                <SkeletonBar className="h-4 w-5/6" />
+                <SkeletonBar className="h-4 w-4/6" />
+              </div>
+
+              {/* Mobile origin / type. */}
+              <div className="grid grid-cols-2 gap-3 lg:hidden">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="space-y-2 rounded-xl border border-tafc-ink/[0.08] bg-white p-3.5"
+                  >
+                    <SkeletonBar className="h-3 w-12" />
+                    <SkeletonBar className="h-4 w-20" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Variant pills. */}
+              <div className="space-y-3">
+                <SkeletonBar className="h-3 w-24" />
+                <div className="flex flex-wrap gap-2">
+                  {[1, 2, 3].map((i) => (
+                    <SkeletonBar key={i} className="h-10 w-24 rounded-full" />
+                  ))}
+                </div>
+              </div>
+
+              {/* CTAs. */}
+              <div className="hidden gap-3 sm:flex">
+                <SkeletonBar className="h-13 flex-1 rounded-full bg-[#25D366]/20" />
+                <SkeletonBar className="h-13 flex-1 rounded-full" />
+              </div>
+
+              <div className="h-px bg-tafc-ink/[0.08]" />
+
+              {/* Usage + packaging spec rows. */}
+              <div className="grid gap-8 md:grid-cols-2">
+                {[1, 2].map((col) => (
+                  <div key={col} className="space-y-4">
+                    <SkeletonBar className="h-5 w-36" />
+                    <div className="space-y-3">
+                      {[1, 2, 3].map((i) => (
+                        <SkeletonBar
+                          key={i}
+                          className="h-12 rounded-xl border border-tafc-ink/[0.08] bg-white"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Related products. */}
+          <section className="mt-20 border-t border-tafc-ink/[0.08] pt-14 md:mt-28">
+            <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
+              <div className="space-y-3">
+                <SkeletonBar className="h-3 w-24 rounded-full" />
+                <SkeletonBar className="h-9 w-56" />
+              </div>
+              <SkeletonBar className="h-4 w-28" />
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-2xl border border-tafc-ink/[0.08] bg-white"
+                >
+                  <div className="aspect-[4/5] animate-pulse bg-tafc-ink/[0.07]" />
+                  <div className="space-y-4 p-5">
+                    <SkeletonBar className="h-3 w-20" />
+                    <SkeletonBar className="h-5 w-3/4" />
+                    <div className="flex gap-2">
+                      <SkeletonBar className="h-6 w-20 rounded-full" />
+                      <SkeletonBar className="h-6 w-24 rounded-full" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </main>
+
+        {/* Mobile fixed CTA bar. */}
+        <div className="fixed inset-x-0 bottom-0 z-40 flex gap-3 border-t border-tafc-ink/[0.08] bg-white/95 p-3 backdrop-blur-md sm:hidden">
+          <SkeletonBar className="h-12 flex-1 rounded-full bg-[#25D366]/20" />
+          <SkeletonBar className="h-12 flex-1 rounded-full" />
+        </div>
+      </div>
+      <Footer />
+    </>
+  )
 }

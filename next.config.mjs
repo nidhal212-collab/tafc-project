@@ -12,6 +12,10 @@ const nextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Next 16 rejects any `quality` prop not listed here, so the optimiser
+    // returns 400 for it. These are the three values the app actually asks for:
+    // 70 (footer wave texture), 75 (default) and 85 (hero photograph).
+    qualities: [70, 75, 85],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days cache
   },
 

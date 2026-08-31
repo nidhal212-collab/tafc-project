@@ -1,74 +1,95 @@
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { SkeletonBar, SkeletonBarInk } from "@/components/ui/skeleton-bar"
 
+/**
+ * Contact fallback. Tracks the restyled page: `bg-white` (it was `bg-slate-200`,
+ * a flat grey nothing on the site uses), an ink hero band with the same
+ * `pt-32 pb-16` paddings, and the three method cards sitting in normal flow
+ * rather than floating on a `-mt-12` overlap.
+ */
 export default function ContactLoading() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-slate-200">
-        {/* Hero Skeleton */}
-        <section className="relative h-[40vh] min-h-[350px] flex items-end pb-16 overflow-hidden bg-[#020c1b]">
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0a192f]/50 to-[#020c1b] z-10" />
-          <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-[#22C5C5]/5 rounded-full blur-3xl opacity-60" />
-
-          <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-white">
+        {/* Hero band. */}
+        <section className="relative isolate overflow-hidden bg-tafc-ink pt-32 pb-16 md:pt-40 md:pb-20">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-40 start-1/3 size-[36rem] rounded-full bg-tafc-accent/[0.07] blur-[120px]"
+          />
+          <div className="container-tafc">
             <div className="max-w-3xl space-y-6">
-              <div className="w-32 h-6 bg-white/10 rounded-full animate-pulse" />
-              <div className="w-2/3 h-12 bg-white/10 rounded animate-pulse" />
-              <div className="w-full max-w-xl h-5 bg-white/5 rounded animate-pulse" />
+              <SkeletonBarInk className="h-11 w-2/3 md:h-14" />
+              <SkeletonBarInk className="h-4 w-full max-w-xl" />
             </div>
           </div>
         </section>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-30 pb-24">
-          {/* Contact Cards Skeleton */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="container-tafc section-y-tight">
+          {/* Three contact methods. */}
+          <div className="grid gap-5 md:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white p-8 rounded-3xl shadow-lg">
-                <div className="space-y-4">
-                  <div className="w-14 h-14 bg-slate-100 rounded-2xl animate-pulse" />
-                  <div className="w-40 h-6 bg-slate-200 rounded animate-pulse" />
-                  <div className="w-28 h-4 bg-slate-100 rounded animate-pulse" />
-                  <div className="w-32 h-5 bg-slate-200 rounded animate-pulse" />
-                </div>
+              <div key={i} className="rounded-2xl border border-tafc-ink/10 bg-white p-7">
+                <SkeletonBar className="mb-6 size-12 rounded-xl" />
+                <SkeletonBar className="h-6 w-40" />
+                <SkeletonBar className="mt-3 h-3 w-28" />
+                <SkeletonBar className="mt-6 h-6 w-36" />
               </div>
             ))}
           </div>
 
-          {/* Form Area Skeleton */}
-          <div className="grid lg:grid-cols-12 gap-8 items-start">
-            {/* Left Column */}
-            <div className="lg:col-span-4 space-y-6">
-              <div className="bg-[#042635] p-8 rounded-3xl h-64 animate-pulse" />
+          <div className="mt-16 grid items-start gap-8 lg:grid-cols-12">
+            {/* Location panel + socials. */}
+            <div className="space-y-5 lg:col-span-4">
+              <div className="rounded-2xl bg-tafc-ink p-8 text-center">
+                <SkeletonBarInk className="mx-auto mb-5 size-14 rounded-full" />
+                <SkeletonBarInk className="mx-auto h-6 w-32" />
+                <SkeletonBarInk className="mx-auto mt-3 h-3 w-24" />
+                <div className="mt-5 space-y-2">
+                  <SkeletonBarInk className="mx-auto h-3 w-full max-w-[16rem]" />
+                  <SkeletonBarInk className="mx-auto h-3 w-4/5 max-w-[13rem]" />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white p-6 rounded-3xl h-24 animate-pulse" />
-                <div className="bg-white p-6 rounded-3xl h-24 animate-pulse" />
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col items-center gap-3 rounded-2xl border border-tafc-ink/10 bg-white p-6"
+                  >
+                    <SkeletonBar className="size-10 rounded-full" />
+                    <SkeletonBar className="h-3 w-16" />
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Form Skeleton */}
+            {/* Quote form. */}
             <div className="lg:col-span-8">
-              <div className="bg-white rounded-3xl p-8 lg:p-10 shadow-sm border border-slate-100">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-1 h-8 bg-slate-200 rounded-full" />
-                  <div className="space-y-2">
-                    <div className="w-48 h-6 bg-slate-200 rounded animate-pulse" />
-                    <div className="w-32 h-4 bg-slate-100 rounded animate-pulse" />
-                  </div>
+              <div className="rounded-2xl border border-tafc-ink/10 bg-white p-7 lg:p-10">
+                <div className="mb-8 space-y-4 border-b border-tafc-ink/[0.08] pb-6">
+                  <SkeletonBar className="h-3 w-32 rounded-full" />
+                  <SkeletonBar className="h-9 w-64" />
                 </div>
 
-                <div className="space-y-5">
-                  <div className="grid md:grid-cols-2 gap-5">
-                    <div className="h-11 bg-slate-50 rounded-xl animate-pulse" />
-                    <div className="h-11 bg-slate-50 rounded-xl animate-pulse" />
+                <div className="space-y-6">
+                  {[1, 2].map((row) => (
+                    <div key={row} className="grid gap-6 md:grid-cols-2">
+                      {[1, 2].map((i) => (
+                        <div key={i} className="space-y-2">
+                          <SkeletonBar className="h-3 w-20" />
+                          <SkeletonBar className="h-12 rounded-xl" />
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                  <div className="space-y-2">
+                    <SkeletonBar className="h-3 w-24" />
+                    <SkeletonBar className="min-h-36 rounded-xl" />
                   </div>
-                  <div className="grid md:grid-cols-2 gap-5">
-                    <div className="h-11 bg-slate-50 rounded-xl animate-pulse" />
-                    <div className="h-11 bg-slate-50 rounded-xl animate-pulse" />
-                  </div>
-                  <div className="h-[120px] bg-slate-50 rounded-xl animate-pulse" />
-                  <div className="flex justify-end">
-                    <div className="w-32 h-12 bg-slate-200 rounded-xl animate-pulse" />
+                  <div className="flex justify-end pt-2">
+                    <SkeletonBar className="h-13 w-44 rounded-full bg-tafc-action/20" />
                   </div>
                 </div>
               </div>

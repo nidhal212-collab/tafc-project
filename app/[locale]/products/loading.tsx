@@ -1,84 +1,74 @@
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
+import { SkeletonBar, SkeletonBarInk } from "@/components/ui/skeleton-bar"
 
+const CARD_GRID = "grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
+
+/**
+ * Catalog fallback. The previous version drew a split two-column hero, which no
+ * longer exists — the catalog hero is a single ink band now, and the cards are
+ * portrait `aspect-[4/5]` rather than `aspect-[4/3]`.
+ */
 export default function ProductsLoading() {
   return (
     <>
       <Header />
-      <main className="pt-20 md:pt-24 min-h-screen bg-slate-50">
-        {/* Hero Skeleton */}
-        <section className="relative w-full flex flex-col md:grid md:grid-cols-2 min-h-[60vh] md:h-[600px] bg-[#042635]">
-          {/* Image Side Skeleton */}
-          <div className="relative h-[40vh] md:h-full w-full overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 animate-shimmer bg-[length:200%_100%]" />
-          </div>
-
-          {/* Content Side Skeleton */}
-          <div className="relative flex flex-col justify-center px-6 py-12 md:px-16 lg:px-24 bg-[#042635]">
-            <div className="space-y-6">
-              <div className="h-4 w-32 bg-slate-600 rounded animate-pulse" />
+      <main className="min-h-screen bg-tafc-shell">
+        {/* Hero band — same paddings as the real one, so nothing shifts. */}
+        <section className="relative isolate overflow-hidden bg-tafc-ink pt-32 pb-16 md:pt-40 md:pb-20">
+          <div className="container-tafc">
+            <div className="max-w-3xl space-y-6">
+              <SkeletonBarInk className="h-3 w-32 rounded-full" />
               <div className="space-y-3">
-                <div className="h-10 w-3/4 bg-slate-600 rounded animate-pulse" />
-                <div className="h-10 w-2/3 bg-slate-600 rounded animate-pulse" />
+                <SkeletonBarInk className="h-10 w-3/4 md:h-14" />
+                <SkeletonBarInk className="h-10 w-1/2 bg-tafc-accent/15 md:h-14" />
               </div>
-              <div className="space-y-2">
-                <div className="h-4 w-full bg-slate-700 rounded animate-pulse" />
-                <div className="h-4 w-5/6 bg-slate-700 rounded animate-pulse" />
-                <div className="h-4 w-4/6 bg-slate-700 rounded animate-pulse" />
+              <div className="max-w-2xl space-y-2">
+                <SkeletonBarInk className="h-4 w-full" />
+                <SkeletonBarInk className="h-4 w-5/6" />
               </div>
-              <div className="flex items-center gap-4">
-                <div className="flex -space-x-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="w-10 h-10 rounded-full bg-slate-600 border-2 border-[#042635]" />
-                  ))}
-                </div>
-                <div className="h-4 w-32 bg-slate-600 rounded animate-pulse" />
+              {/* Trust line. */}
+              <div className="border-t border-white/15 pt-6">
+                <SkeletonBarInk className="h-3 w-56" />
               </div>
             </div>
           </div>
         </section>
 
-        {/* Main Content Skeleton */}
-        <section className="py-12 md:py-16">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row gap-10">
-              {/* Sidebar Skeleton */}
-              <aside className="lg:w-60 flex-shrink-0 hidden lg:block">
-                <div className="lg:sticky lg:top-24 space-y-4">
-                  <div className="h-6 w-24 bg-slate-200 rounded animate-pulse" />
-                  <div className="space-y-2">
-                    {[1, 2, 3, 4, 5, 6].map(i => (
-                      <div key={i} className="h-11 w-full bg-slate-100 rounded-lg animate-pulse" />
-                    ))}
-                  </div>
+        <section className="section-y-tight">
+          <div className="container-tafc">
+            <div className="flex flex-col gap-12 lg:flex-row lg:gap-14">
+              {/* Sidebar filters. */}
+              <aside className="hidden shrink-0 lg:block lg:w-60">
+                <div className="space-y-3 lg:sticky lg:top-28">
+                  <SkeletonBar className="h-3 w-24" />
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <SkeletonBar key={i} className="h-11 w-full rounded-lg" />
+                  ))}
                 </div>
               </aside>
 
-              {/* Products Grid Skeleton */}
-              <div className="flex-1 min-w-0">
-                {/* Search Bar Skeleton */}
-                <div className="mb-8">
-                  <div className="h-14 max-w-2xl bg-white border border-slate-200 rounded-xl animate-pulse" />
-                </div>
+              <div className="min-w-0 flex-1">
+                {/* Search pill. */}
+                <SkeletonBar className="mb-10 h-13 max-w-2xl rounded-full" />
 
-                {/* Product Cards Skeleton */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-10">
+                <div className={CARD_GRID}>
                   {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-                      {/* Image Skeleton */}
-                      <div className="aspect-[4/3] bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 animate-shimmer bg-[length:200%_100%]" />
-
-                      {/* Content Skeleton */}
-                      <div className="p-5 space-y-4">
-                        <div className="h-3 w-20 bg-slate-100 rounded animate-pulse" />
-                        <div className="h-5 w-3/4 bg-slate-200 rounded animate-pulse" />
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="h-4 bg-slate-100 rounded animate-pulse" />
-                          <div className="h-4 bg-slate-100 rounded animate-pulse" />
+                    <div
+                      key={i}
+                      className="overflow-hidden rounded-2xl border border-tafc-ink/[0.08] bg-white"
+                    >
+                      <div className="aspect-[4/5] animate-pulse bg-tafc-ink/[0.07]" />
+                      <div className="space-y-4 p-5">
+                        <SkeletonBar className="h-3 w-20" />
+                        <SkeletonBar className="h-5 w-3/4" />
+                        <div className="flex gap-2">
+                          <SkeletonBar className="h-6 w-20 rounded-full" />
+                          <SkeletonBar className="h-6 w-24 rounded-full" />
                         </div>
-                        <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-3">
-                          <div className="h-9 bg-slate-100 rounded-lg animate-pulse" />
-                          <div className="h-9 bg-slate-200 rounded-lg animate-pulse" />
+                        <div className="flex items-center justify-between border-t border-tafc-ink/[0.06] pt-4">
+                          <SkeletonBar className="h-4 w-24" />
+                          <SkeletonBar className="h-9 w-28 rounded-full" />
                         </div>
                       </div>
                     </div>

@@ -1,25 +1,35 @@
 "use client"
 
 import Image from "next/image"
-import { ImageWithSkeleton } from "@/components/ui/image-with-skeleton"
-import Link from "next/link"
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { ArrowLeft, ChevronRight, Fish, MapPin, Package, Snowflake, Sun, CheckCircle2, Ruler, Layers, Scale, ArrowRight, ZoomIn, Check } from "lucide-react"
-
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Separator } from "@/components/ui/separator"
-import { ProductCard } from "@/components/ui/product-card"
-import type { Product, TranslatedProduct } from "@/lib/products-data"
-import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
 import {
-    Dialog,
-    DialogContent,
-    DialogTrigger,
-    DialogTitle,
-} from "@/components/ui/dialog"
+    ArrowLeft,
+    ArrowRight,
+    ChevronRight,
+    CheckCircle2,
+    Layers,
+    MapPin,
+    Package,
+    Phone,
+    Ruler,
+    Scale,
+    Snowflake,
+    Sun,
+    ZoomIn,
+    Check,
+} from "lucide-react"
+
+import { Link } from "@/i18n/navigation"
+import { Button } from "@/components/ui/button"
+import { ProductCard } from "@/components/ui/product-card"
+import { ImageWithSkeleton } from "@/components/ui/image-with-skeleton"
+import { Reveal } from "@/components/ui/reveal"
+import { Eyebrow } from "@/components/ui/section-intro"
+import type { Product, TranslatedProduct } from "@/lib/products-data"
+import { cn } from "@/lib/utils"
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog"
 
 interface ProductViewProps {
     product: Product | TranslatedProduct
@@ -28,6 +38,41 @@ interface ProductViewProps {
 
 const whatsappNumber = "+21698621128"
 
+/** Frozen vs fresh, across all three locales. */
+function isFrozen(type: string) {
+    const t = type.toLowerCase()
+    return t.includes("congelé") || t.includes("frozen") || t.includes("مجمد")
+}
+
+/** WhatsApp glyph, inlined so the brand mark stays exact at every size. */
+function WhatsAppIcon({ className }: { className?: string }) {
+    return (
+        <svg viewBox="0 0 24 24" aria-hidden="true" className={cn("fill-current", className)}>
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
+    )
+}
+
+/** Spec list row — one recipe for usage and packaging, previously teal vs orange. */
+function SpecRow({ icon: Icon, children }: { icon: typeof Package; children: React.ReactNode }) {
+    return (
+        <li className="flex items-center gap-3 rounded-xl border border-tafc-ink/[0.08] bg-white px-4 py-3">
+            <Icon aria-hidden="true" className="size-4 shrink-0 text-tafc-accent" />
+            <span className="text-tafc-ink/80">{children}</span>
+        </li>
+    )
+}
+
+/**
+ * Product detail.
+ *
+ * The interactions worth keeping are kept: the `Dialog` image zoom, the variant
+ * picker feeding the WhatsApp message, and the mobile fixed CTA bar. What changed
+ * is the palette — usage was teal, packaging orange and variants purple, three
+ * accent systems on one screen — now one neutral surface with teal as the single
+ * accent. `next/link` is also swapped for the locale-aware `Link`, so the
+ * breadcrumb and related-products links no longer drop the active locale.
+ */
 export function ProductView({ product, relatedProducts }: ProductViewProps) {
     const t = useTranslations("productsData.ui")
     const tNav = useTranslations("nav")
@@ -47,108 +92,115 @@ export function ProductView({ product, relatedProducts }: ProductViewProps) {
         visible: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.1,
-                delayChildren: 0.2,
+                staggerChildren: 0.09,
+                delayChildren: 0.15,
             },
         },
     }
 
     const itemVariants = {
-        hidden: { opacity: 0, y: 20 },
+        hidden: { opacity: 0, y: 18 },
         visible: {
             opacity: 1,
             y: 0,
-            transition: { duration: 0.5, ease: "easeOut" as const },
+            transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const },
         },
     }
 
+    const TypeIcon = isFrozen(product.type) ? Snowflake : Sun
+
     return (
-        <div className="min-h-screen bg-slate-50/50 pb-24 md:pb-0">
-            {/* Desktop Sticky Nav */}
-            <motion.nav
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="hidden md:block sticky top-[80px] z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/60 transition-all"
-            >
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-12 flex items-center gap-2 text-sm text-slate-500">
-                    <Link href="/products" className="hover:text-slate-900 transition-colors flex items-center gap-1 group">
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+        <div className="min-h-screen bg-tafc-shell pb-24 md:pb-0">
+            {/* ---- Breadcrumb rail. `top-20` matches the header's 5rem height. ---- */}
+            <nav className="sticky top-20 z-30 hidden border-b border-tafc-ink/[0.08] bg-white/85 backdrop-blur-md md:block">
+                <div className="container-tafc flex h-12 items-center gap-2 text-meta text-tafc-ink/50">
+                    <Link
+                        href="/products"
+                        className="group inline-flex items-center gap-1.5 transition-colors hover:text-tafc-ink"
+                    >
+                        <ArrowLeft
+                            aria-hidden="true"
+                            className="size-3.5 transition-transform group-hover:-translate-x-0.5 rtl:rotate-180 rtl:group-hover:translate-x-0.5"
+                        />
                         {t("backToProducts")}
                     </Link>
-                    <ChevronRight className="w-4 h-4 text-slate-300" />
-                    <Link href={`/products?category=${product.categorySlug}`} className="hover:text-slate-900 transition-colors">
+                    <ChevronRight aria-hidden="true" className="size-3.5 text-tafc-ink/20 rtl:rotate-180" />
+                    <Link
+                        href={`/products?category=${product.categorySlug}`}
+                        className="transition-colors hover:text-tafc-ink"
+                    >
                         {product.category}
                     </Link>
-                    <ChevronRight className="w-4 h-4 text-slate-300" />
-                    <span className="text-slate-900 font-medium truncate">{product.name}</span>
+                    <ChevronRight aria-hidden="true" className="size-3.5 text-tafc-ink/20 rtl:rotate-180" />
+                    <span className="truncate font-medium text-tafc-ink">{product.name}</span>
                 </div>
-            </motion.nav>
+            </nav>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:py-16">
-
-                {/* Mobile Floating Back Button */}
+            <main className="container-tafc pt-24 pb-12 md:py-16">
+                {/* Mobile floating back button */}
                 <Link
                     href="/products"
-                    className="md:hidden absolute top-24 left-4 z-20 bg-white/90 backdrop-blur-sm p-2.5 rounded-full shadow-lg border border-slate-100/50 text-slate-700 active:scale-95 transition-all"
+                    className="absolute top-24 start-4 z-20 rounded-full border border-tafc-ink/10 bg-white/90 p-2.5 text-tafc-ink shadow-lg backdrop-blur-sm transition-transform active:scale-95 md:hidden"
                 >
-                    <ArrowLeft className="w-5 h-5" />
+                    <ArrowLeft aria-hidden="true" className="size-5 rtl:rotate-180" />
+                    <span className="sr-only">{t("backToProducts")}</span>
                 </Link>
 
-                <div className="grid lg:grid-cols-2 gap-8 lg:gap-20 items-start">
-
-                    {/* Left Column - Image */}
+                <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-16">
+                    {/* ---- Image ------------------------------------------------ */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                        className="lg:sticky lg:top-32 h-fit space-y-4 relative"
+                        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                        className="relative h-fit space-y-3 lg:sticky lg:top-36"
                     >
-                        {/* Main Image Container */}
                         <Dialog>
                             <DialogTrigger asChild>
-                                <div className="relative aspect-square rounded-[2rem] overflow-hidden bg-white shadow-xl md:shadow-2xl shadow-slate-200/50 border border-slate-100 group cursor-zoom-in">
+                                <div className="group relative aspect-square cursor-zoom-in overflow-hidden rounded-2xl border border-tafc-ink/[0.08] bg-white">
                                     <ImageWithSkeleton
                                         src={product.image || "/placeholder.svg"}
                                         alt={product.name}
                                         fill
-                                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                                         priority
                                         sizes="(max-width: 1024px) 100vw, 50vw"
                                     />
 
-                                    {/* Hover Overlay with Zoom Icon */}
-                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300 flex items-center justify-center">
-                                        <div className="bg-white/90 backdrop-blur-sm p-3 rounded-full opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
-                                            <ZoomIn className="w-6 h-6 text-slate-700" />
-                                        </div>
+                                    <div
+                                        aria-hidden="true"
+                                        className="absolute inset-0 flex items-center justify-center bg-tafc-ink/0 transition-colors duration-300 group-hover:bg-tafc-ink/15"
+                                    >
+                                        <span className="translate-y-3 rounded-full bg-white/95 p-3 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                                            <ZoomIn className="size-5 text-tafc-ink" />
+                                        </span>
                                     </div>
 
-                                    {/* Floating Badges */}
-                                    <div className="absolute top-4 left-4 md:top-6 md:left-6 flex flex-wrap gap-2 max-w-[80%]">
+                                    {/* Tag chips — same recipe as the catalog card. */}
+                                    <div className="absolute inset-x-4 top-4 flex max-w-[85%] flex-wrap gap-2">
                                         {product.tags.map((tag, i) => (
-                                            <motion.div
+                                            <motion.span
                                                 key={tag}
-                                                initial={{ opacity: 0, x: -20 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.4 + (i * 0.1) }}
+                                                initial={{ opacity: 0, y: -8 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.35 + i * 0.08 }}
+                                                className={cn(
+                                                    "rounded-full px-2.5 py-1 text-eyebrow uppercase backdrop-blur-sm",
+                                                    tag === "Premium" || tag === "Best-seller"
+                                                        ? "bg-tafc-accent text-tafc-ink"
+                                                        : "bg-tafc-ink/85 text-white"
+                                                )}
                                             >
-                                                <Badge
-                                                    className={cn(
-                                                        "backdrop-blur-md border border-white/20 bg-black/30 text-white shadow-sm hover:bg-black/40 transition-all",
-                                                        "text-[10px] md:text-xs font-semibold px-2.5 py-0.5 tracking-wide uppercase",
-                                                        (tag === "Premium" || tag === "Best-seller") && "bg-teal-600/80 border-teal-400/30 text-white"
-                                                    )}
-                                                >
-                                                    {tag}
-                                                </Badge>
-                                            </motion.div>
+                                                {tag}
+                                            </motion.span>
                                         ))}
                                     </div>
                                 </div>
                             </DialogTrigger>
-                            <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-0 shadow-none overflow-hidden">
-                                <DialogTitle className="sr-only">{t("detailedView")} {product.name}</DialogTitle>
-                                <div className="relative w-full aspect-square md:aspect-[4/3] rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm">
+                            <DialogContent className="w-full max-w-4xl overflow-hidden border-0 bg-transparent p-0 shadow-none">
+                                <DialogTitle className="sr-only">
+                                    {t("detailedView")} {product.name}
+                                </DialogTitle>
+                                <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-tafc-ink/5 backdrop-blur-sm md:aspect-[4/3]">
                                     <Image
                                         src={product.image || "/placeholder.svg"}
                                         alt={product.name}
@@ -161,150 +213,134 @@ export function ProductView({ product, relatedProducts }: ProductViewProps) {
                             </DialogContent>
                         </Dialog>
 
-                        {/* Visual Specs Row - Desktop Only */}
-                        <div className="hidden lg:grid grid-cols-2 gap-3">
-                            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center gap-1">
-                                <MapPin className="w-5 h-5 text-teal-600 mb-1" />
-                                <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">{t("origin")}</span>
-                                <span className="text-sm font-bold text-slate-800 line-clamp-1">{product.origin}</span>
+                        {/* Origin / type — desktop */}
+                        <div className="hidden grid-cols-2 gap-3 lg:grid">
+                            <div className="rounded-xl border border-tafc-ink/[0.08] bg-white p-4">
+                                <p className="mb-2 flex items-center gap-1.5 text-eyebrow text-tafc-ink/45 uppercase">
+                                    <MapPin aria-hidden="true" className="size-3 text-tafc-accent" />
+                                    {t("origin")}
+                                </p>
+                                <p className="line-clamp-1 font-display font-semibold text-tafc-ink">
+                                    {product.origin}
+                                </p>
                             </div>
-                            <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center text-center gap-1">
-                                {product.type.toLowerCase().includes("congelé") || product.type.toLowerCase().includes("frozen") || product.type.toLowerCase().includes("مجمد") ? <Snowflake className="w-5 h-5 text-cyan-600 mb-1" /> : <Sun className="w-5 h-5 text-orange-500 mb-1" />}
-                                <span className="text-xs text-slate-400 font-medium uppercase tracking-wide">{t("type")}</span>
-                                <span className="text-sm font-bold text-slate-800">{product.type}</span>
+                            <div className="rounded-xl border border-tafc-ink/[0.08] bg-white p-4">
+                                <p className="mb-2 flex items-center gap-1.5 text-eyebrow text-tafc-ink/45 uppercase">
+                                    <TypeIcon aria-hidden="true" className="size-3 text-tafc-accent" />
+                                    {t("type")}
+                                </p>
+                                <p className="font-display font-semibold text-tafc-ink">{product.type}</p>
                             </div>
                         </div>
                     </motion.div>
 
-                    {/* Right Column - Details */}
+                    {/* ---- Details ---------------------------------------------- */}
                     <motion.div
                         variants={containerVariants}
                         initial="hidden"
                         animate="visible"
-                        className="flex flex-col gap-6 md:gap-8 pt-0 md:pt-2"
+                        className="flex flex-col gap-8"
                     >
-                        {/* Header Info */}
-                        <motion.div variants={itemVariants} className="space-y-3 md:space-y-4">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full bg-teal-50 border border-teal-100 w-fit">
-                                <Fish className="w-3.5 h-3.5 md:w-4 md:h-4 text-teal-600" />
-                                <span className="text-teal-800 text-xs md:text-sm font-bold tracking-wide">{product.category}</span>
-                            </div>
-
-                            <div className="space-y-1 md:space-y-2">
-                                <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-slate-900 tracking-tight leading-[1.1] font-[family-name:var(--font-sora)]">
-                                    {product.name}
-                                </h1>
-                                {product.latinName && (
-                                    <p className="text-lg md:text-2xl text-slate-400 font-serif italic">
-                                        {product.latinName}
-                                    </p>
-                                )}
-                                <p className="text-xs md:text-sm font-mono text-cyan-600 bg-cyan-50 border border-cyan-100 px-3 py-1.5 rounded-lg w-fit mt-2">
-                                    TAFC/{product.slug.toUpperCase().slice(0, 8)}-{product.id.padStart(3, '0')}
-                                </p>
-                            </div>
-                        </motion.div>
-
                         <motion.div variants={itemVariants}>
-                            <p className="text-base md:text-xl text-slate-600 leading-relaxed font-[family-name:var(--font-manrope)]">
-                                {product.description}
+                            <Eyebrow>{product.category}</Eyebrow>
+                            <h1 className="mt-5 font-display text-h1 text-balance text-tafc-ink">
+                                {product.name}
+                            </h1>
+                            {product.latinName && (
+                                <p className="mt-2 font-serif text-h3 text-tafc-ink/40 italic">
+                                    {product.latinName}
+                                </p>
+                            )}
+                            <p className="mt-4 inline-block font-mono text-meta tracking-tight text-tafc-ink/50">
+                                TAFC/{product.slug.toUpperCase().slice(0, 8)}-{product.id.padStart(3, "0")}
                             </p>
                         </motion.div>
 
-                        {/* Mobile Specs Grid */}
+                        <motion.p variants={itemVariants} className="text-deck text-pretty text-tafc-ink/70">
+                            {product.description}
+                        </motion.p>
+
+                        {/* Origin / type — mobile */}
                         <div className="grid grid-cols-2 gap-3 lg:hidden">
-                            <div className="bg-white p-3.5 rounded-xl border border-slate-200/60 shadow-sm">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">{t("origin")}</p>
-                                <p className="font-semibold text-slate-900 flex items-center gap-1.5 text-sm">
-                                    <MapPin className="w-4 h-4 text-teal-500" /> {product.origin}
+                            <div className="rounded-xl border border-tafc-ink/[0.08] bg-white p-3.5">
+                                <p className="mb-1.5 text-eyebrow text-tafc-ink/45 uppercase">{t("origin")}</p>
+                                <p className="flex items-center gap-1.5 text-meta font-semibold text-tafc-ink">
+                                    <MapPin aria-hidden="true" className="size-3.5 shrink-0 text-tafc-accent" />
+                                    {product.origin}
                                 </p>
                             </div>
-                            <div className="bg-white p-3.5 rounded-xl border border-slate-200/60 shadow-sm">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">{t("type")}</p>
-                                <p className="font-semibold text-slate-900 flex items-center gap-1.5 text-sm">
-                                    {product.type.toLowerCase().includes("congelé") || product.type.toLowerCase().includes("frozen") || product.type.toLowerCase().includes("مجمد") ? <Snowflake className="w-4 h-4 text-cyan-600" /> : <Sun className="w-4 h-4 text-orange-500" />}
+                            <div className="rounded-xl border border-tafc-ink/[0.08] bg-white p-3.5">
+                                <p className="mb-1.5 text-eyebrow text-tafc-ink/45 uppercase">{t("type")}</p>
+                                <p className="flex items-center gap-1.5 text-meta font-semibold text-tafc-ink">
+                                    <TypeIcon aria-hidden="true" className="size-3.5 shrink-0 text-tafc-accent" />
                                     {product.type}
                                 </p>
                             </div>
                         </div>
 
-                        {/* Professional Order CTA Card - Desktop Only */}
-                        <motion.div variants={itemVariants} className="hidden md:block">
-                            <div className="flex flex-row gap-4 pt-2">
-                                <Button
-                                    asChild
-                                    size="lg"
-                                    className="bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold h-14 rounded-xl shadow-lg shadow-green-900/10 flex-1"
+                        {/* Desktop CTAs */}
+                        <motion.div variants={itemVariants} className="hidden gap-4 md:flex">
+                            <Button
+                                asChild
+                                size="xl"
+                                className="flex-1 border-0 bg-[#25D366] font-semibold text-white transition-colors hover:bg-[#20BD5A]"
+                            >
+                                <a
+                                    href={`https://wa.me/${whatsappNumber}?text=${buildWhatsAppMessage()}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                 >
-                                    <a
-                                        href={`https://wa.me/${whatsappNumber}?text=${buildWhatsAppMessage()}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-center gap-2"
-                                    >
-                                        <div className="bg-white/20 p-1.5 rounded-lg">
-                                            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
-                                        </div>
-                                        <span className="text-base">{t("whatsappQuote")}</span>
-                                    </a>
-                                </Button>
-
-                                <Button
-                                    asChild
-                                    size="lg"
-                                    variant="outline"
-                                    className="border-slate-300 text-slate-700 hover:bg-slate-50 hover:text-slate-900 h-14 rounded-xl flex-1"
-                                >
-                                    <Link href="/contact" className="flex items-center justify-center gap-2">
-                                        <span className="text-base">{t("contact")}</span>
-                                        <ArrowRight className="w-5 h-5" />
-                                    </Link>
-                                </Button>
-                            </div>
+                                    <WhatsAppIcon className="size-5" />
+                                    {t("whatsappQuote")}
+                                </a>
+                            </Button>
+                            <Button asChild size="xl" variant="onLight" className="flex-1">
+                                <Link href="/contact">
+                                    {t("contact")}
+                                    <ArrowRight aria-hidden="true" className="size-4 rtl:rotate-180" />
+                                </Link>
+                            </Button>
                         </motion.div>
 
-                        <Separator className="bg-slate-200" />
+                        <div className="border-t border-tafc-ink/[0.08]" />
 
-                        {/* Detailed Lists */}
-                        <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-                            <motion.div variants={itemVariants} className="space-y-3 md:space-y-4">
-                                <h3 className="text-lg font-bold text-slate-900 font-[family-name:var(--font-sora)] flex items-center gap-2">
-                                    <span className="w-1 h-5 md:h-6 bg-teal-500 rounded-full" /> {t("recommendedUsage")}
-                                </h3>
-                                <div className="flex flex-col gap-2 md:gap-3">
+                        {/* Usage + packaging */}
+                        <div className="grid gap-8 md:grid-cols-2">
+                            <motion.div variants={itemVariants}>
+                                <h2 className="eyebrow-rule mb-4 inline-flex items-center text-eyebrow text-tafc-ink/55 uppercase">
+                                    {t("recommendedUsage")}
+                                </h2>
+                                <ul className="flex flex-col gap-2">
                                     {product.usage.map((use) => (
-                                        <div key={use} className="flex items-center gap-3 text-slate-700 bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-sm md:text-base">
-                                            <CheckCircle2 className="w-5 h-5 text-teal-500 flex-shrink-0" />
-                                            <span className="font-medium">{use}</span>
-                                        </div>
+                                        <SpecRow key={use} icon={CheckCircle2}>
+                                            {use}
+                                        </SpecRow>
                                     ))}
-                                </div>
+                                </ul>
                             </motion.div>
 
-                            <motion.div variants={itemVariants} className="space-y-3 md:space-y-4">
-                                <h3 className="text-lg font-bold text-slate-900 font-[family-name:var(--font-sora)] flex items-center gap-2">
-                                    <span className="w-1 h-5 md:h-6 bg-orange-500 rounded-full" /> {t("packaging")}
-                                </h3>
-                                <div className="flex flex-col gap-2 md:gap-3">
+                            <motion.div variants={itemVariants}>
+                                <h2 className="eyebrow-rule mb-4 inline-flex items-center text-eyebrow text-tafc-ink/55 uppercase">
+                                    {t("packaging")}
+                                </h2>
+                                <ul className="flex flex-col gap-2">
                                     {product.formats.map((format) => (
-                                        <div key={format} className="flex items-center gap-3 text-slate-700 bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-sm md:text-base">
-                                            <Package className="w-5 h-5 text-orange-500 flex-shrink-0" />
-                                            <span className="font-medium">{format}</span>
-                                        </div>
+                                        <SpecRow key={format} icon={Package}>
+                                            {format}
+                                        </SpecRow>
                                     ))}
-                                </div>
+                                </ul>
                             </motion.div>
                         </div>
 
-                        {/* Variants Section */}
+                        {/* Variants — selection flows into the WhatsApp message */}
                         {product.variants && product.variants.length > 0 && (
-                            <motion.div variants={itemVariants} className="space-y-3 md:space-y-4">
-                                <h3 className="text-lg font-bold text-slate-900 font-[family-name:var(--font-sora)] flex items-center gap-2">
-                                    <span className="w-1 h-5 md:h-6 bg-purple-500 rounded-full" /> {t("availableVariants")}
-                                </h3>
-                                <div className="flex flex-wrap gap-2 md:gap-3">
+                            <motion.div variants={itemVariants}>
+                                <h2 className="eyebrow-rule mb-4 inline-flex items-center text-eyebrow text-tafc-ink/55 uppercase">
+                                    {t("availableVariants")}
+                                </h2>
+                                <div className="flex flex-wrap gap-2.5">
                                     {product.variants.map((variant, idx) => {
-                                        // Format label based on kind
                                         let label = ""
                                         if (variant.kind === "size") {
                                             label = `${t("size")} ${variant.value}`
@@ -315,13 +351,17 @@ export function ProductView({ product, relatedProducts }: ProductViewProps) {
                                         } else {
                                             label = variant.value
                                         }
-                                        // Select icon based on kind
+
                                         const getIcon = () => {
                                             switch (variant.kind) {
-                                                case "size": return <Ruler className="w-4 h-4 text-purple-500" />
-                                                case "caliber": return <Scale className="w-4 h-4 text-purple-500" />
-                                                case "preparation": return <Layers className="w-4 h-4 text-purple-500" />
-                                                default: return <Package className="w-4 h-4 text-purple-500" />
+                                                case "size":
+                                                    return <Ruler className="size-3.5" />
+                                                case "caliber":
+                                                    return <Scale className="size-3.5" />
+                                                case "preparation":
+                                                    return <Layers className="size-3.5" />
+                                                default:
+                                                    return <Package className="size-3.5" />
                                             }
                                         }
 
@@ -331,15 +371,21 @@ export function ProductView({ product, relatedProducts }: ProductViewProps) {
                                             <button
                                                 key={idx}
                                                 type="button"
+                                                aria-pressed={isSelected}
                                                 onClick={() => setSelectedVariant(isSelected ? null : label)}
                                                 className={cn(
-                                                    "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium shadow-sm transition-all cursor-pointer",
+                                                    "inline-flex cursor-pointer items-center gap-2 rounded-full px-4 py-2.5 text-meta font-medium transition-colors duration-200",
                                                     isSelected
-                                                        ? "bg-purple-100 border-2 border-purple-500 text-purple-800 ring-2 ring-purple-200"
-                                                        : "bg-white border border-slate-200 text-slate-700 hover:border-purple-300 hover:bg-purple-50/50"
+                                                        ? "bg-tafc-ink text-white"
+                                                        : "border border-tafc-ink/12 bg-white text-tafc-ink/70 hover:border-tafc-accent/50 hover:text-tafc-ink"
                                                 )}
                                             >
-                                                {isSelected ? <Check className="w-4 h-4 text-purple-600" /> : getIcon()}
+                                                <span
+                                                    aria-hidden="true"
+                                                    className={isSelected ? "text-tafc-accent" : "text-tafc-accent/70"}
+                                                >
+                                                    {isSelected ? <Check className="size-3.5" /> : getIcon()}
+                                                </span>
                                                 {label}
                                             </button>
                                         )
@@ -350,76 +396,69 @@ export function ProductView({ product, relatedProducts }: ProductViewProps) {
                     </motion.div>
                 </div>
 
-                {/* Related Products */}
+                {/* ---- Related --------------------------------------------------- */}
                 {relatedProducts.length > 0 && (
-                    <motion.section
-                        initial={{ opacity: 0, y: 50 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-100px" }}
-                        transition={{ duration: 0.8 }}
-                        className="mt-16 md:mt-32 border-t border-slate-200 pt-10 md:pt-16"
+                    <Reveal
+                        as="section"
+                        y={32}
+                        duration={0.8}
+                        className="mt-20 border-t border-tafc-ink/[0.08] pt-14 md:mt-28"
                     >
-                        <div className="flex flex-row items-center justify-between mb-6 md:mb-10">
+                        <div className="mb-10 flex flex-wrap items-end justify-between gap-4">
                             <div>
-                                <span className="text-teal-600 font-bold tracking-wider uppercase text-xs md:text-sm mb-1 block">{t("discoverMore")}</span>
-                                <h2 className="text-2xl md:text-4xl font-bold text-slate-900 font-[family-name:var(--font-sora)] relative z-10">
-                                    {t("similar")}
-                                </h2>
+                                <Eyebrow>{t("discoverMore")}</Eyebrow>
+                                <h2 className="mt-4 font-display text-h2 text-tafc-ink">{t("similar")}</h2>
                             </div>
-                            <Button asChild variant="ghost" className="text-slate-600 hover:text-slate-900 group text-sm md:text-base">
+                            <Button asChild variant="quiet" size="inline" className="text-tafc-ink/60">
                                 <Link href={`/products?category=${product.categorySlug}`}>
                                     <span className="hidden sm:inline">{t("viewAll")}</span>
                                     <span className="sm:hidden">{t("all")}</span>
-                                    <ArrowLeft className="w-4 h-4 ml-2 rotate-180 group-hover:translate-x-1 transition-transform" />
+                                    <ArrowRight aria-hidden="true" className="size-4 rtl:rotate-180" />
                                 </Link>
                             </Button>
                         </div>
 
-                        <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-8 -mx-4 px-4 sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-8 sm:pb-0 sm:mx-0 sm:px-0 scrollbar-hide">
+                        <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-8 sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-6 sm:px-0 sm:pb-0 lg:grid-cols-3">
                             {relatedProducts.map((related, idx) => (
-                                <div key={related.id} className="min-w-[85vw] sm:min-w-0 snap-center">
+                                <div key={related.id} className="min-w-[80vw] snap-center sm:min-w-0">
                                     <ProductCard product={related} index={idx} />
                                 </div>
                             ))}
                         </div>
-                    </motion.section>
+                    </Reveal>
                 )}
             </main>
 
-            {/* Mobile Fixed CTA */}
+            {/* ---- Mobile fixed CTA bar -------------------------------------- */}
             <motion.div
                 initial={{ y: 100 }}
                 animate={{ y: 0 }}
-                transition={{ delay: 1 }}
-                className="fixed bottom-0 left-0 right-0 z-40 p-4 bg-white/90 backdrop-blur-xl border-t border-slate-200 shadow-[0_-5px_20px_-5px_rgba(0,0,0,0.1)] md:hidden"
+                transition={{ delay: 0.9, ease: [0.22, 1, 0.36, 1] }}
+                className="fixed inset-x-0 bottom-0 z-40 border-t border-tafc-ink/[0.08] bg-white/92 p-4 backdrop-blur-xl md:hidden"
             >
-                <div className="flex gap-3 max-w-sm mx-auto">
+                <div className="mx-auto flex max-w-sm gap-3">
                     <Button
                         asChild
                         size="lg"
-                        className="flex-1 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl shadow-lg shadow-green-900/10"
+                        className="h-12 flex-1 rounded-full border-0 bg-[#25D366] font-semibold text-white hover:bg-[#20BD5A]"
                     >
                         <a
                             href={`https://wa.me/${whatsappNumber}?text=${buildWhatsAppMessage()}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center justify-center gap-2"
                         >
-                            <div className="bg-white/20 p-1 rounded-full">
-                                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
-                            </div>
-                            <span>Devis WhatsApp</span>
+                            <WhatsAppIcon className="size-4" />
+                            {t("whatsappQuote")}
                         </a>
                     </Button>
                     <Button
                         asChild
-                        size="lg"
                         variant="outline"
-                        className="flex-none w-14 border-2 border-slate-200 rounded-xl px-0"
+                        className="size-12 flex-none rounded-full border-tafc-ink/12 px-0 text-tafc-ink/70"
                     >
-                        <Link href="/contact" className="flex items-center justify-center">
-                            <div className="sr-only">Contacter</div>
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5 text-slate-600"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                        <Link href="/contact">
+                            <Phone aria-hidden="true" className="size-4.5" />
+                            <span className="sr-only">{t("contact")}</span>
                         </Link>
                     </Button>
                 </div>
