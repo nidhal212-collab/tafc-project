@@ -125,7 +125,7 @@ export function BestSellers() {
                           {tHero(`products.${key}.subtitle`)}
                         </span>
                       </span>
-                      <span className="shrink-0 font-mono text-data text-tafc-ink/45 uppercase">
+                      <span className="shrink-0 text-data text-tafc-ink/45 uppercase">
                         {tHero(`products.${key}.badge`)}
                       </span>
                     </li>
@@ -180,14 +180,14 @@ export function BestSellers() {
                         aria-hidden="true"
                         className="absolute inset-0 bg-gradient-to-t from-tafc-ink/70 via-transparent to-transparent"
                       />
-                      <span className="absolute start-4 top-4 rounded-full bg-tafc-accent px-2.5 py-1 font-mono text-data text-tafc-ink uppercase">
+                      <span className="absolute start-4 top-4 rounded-full bg-tafc-accent px-2.5 py-1 text-data text-tafc-ink uppercase">
                         {t("badge")}
                       </span>
                     </div>
 
                     <div className="flex flex-1 flex-col p-6">
                       {product.latinName && (
-                        <p className="mb-1.5 font-serif text-meta text-white/40 italic">
+                        <p className="mb-1.5 text-meta text-white/40 italic">
                           {product.latinName}
                         </p>
                       )}

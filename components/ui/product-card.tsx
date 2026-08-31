@@ -88,7 +88,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* ---- Content ------------------------------------------------- */}
         <div className="flex flex-1 flex-col p-5">
           {product.latinName && (
-            <p className="mb-1.5 font-serif text-meta text-tafc-ink/45 italic">
+            <p className="mb-1.5 text-meta text-tafc-ink/45 italic">
               {product.latinName}
             </p>
           )}

@@ -5,9 +5,12 @@ import { cn } from "@/lib/utils"
  *
  * A seafood export enquiry is answered with a spec line — species, origin,
  * chilled or frozen, caliber, pack format — and that vocabulary is the one thing
- * TAFC's page can carry that a generic "premium producer" template cannot. These
- * two primitives set that voice in mono so it reads as catalogue data rather
- * than marketing copy, and they are the only place the mono face is introduced.
+ * TAFC's page can carry that a generic "premium producer" template cannot.
+ *
+ * This used to be set in JetBrains Mono, the site's third font family. The voice
+ * does not actually come from the monospace face: it comes from the uppercase,
+ * the 0.1em tracking and the tabular figures, all of which Inter has. So the
+ * family is gone and the voice stayed.
  *
  * `SpecChips` (components/ui/spec-chips.tsx) is the card-level version of the
  * same idea; these are the page-level version.
@@ -20,13 +23,16 @@ export interface DataLabelProps {
     className?: string
 }
 
-/** Small tracked mono label. Precedes a value; never used alone as body copy. */
+/** Small tracked label. Precedes a value; never used alone as body copy. */
 export function DataLabel({ children, tone = "light", className }: DataLabelProps) {
     return (
         <span
             className={cn(
-                "block font-mono text-data uppercase",
-                tone === "ink" ? "text-white/45" : "text-tafc-ink/45",
+                "block text-data uppercase",
+                // 65% is the muted floor: 5.05:1 on white, 4.99:1 on shell,
+                // 7.34:1 on ink. These were at 45%, which failed 4.5:1 on every
+                // surface — and every spec label on the site comes through here.
+                tone === "ink" ? "text-white/65" : "text-tafc-ink/65",
                 className,
             )}
         >

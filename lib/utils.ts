@@ -21,6 +21,7 @@ const TYPE_STEPS = [
   'h2',
   'h3',
   'deck',
+  'body',
   'meta',
   'eyebrow',
   'data',

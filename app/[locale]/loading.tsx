@@ -13,10 +13,6 @@ export default function HomeLoading() {
       <main>
         {/* Hero: full-bleed ink, same `min-h-svh` as the real section. */}
         <section className="relative isolate flex min-h-svh items-center overflow-hidden bg-tafc-ink">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-40 start-1/4 size-[36rem] rounded-full bg-tafc-accent/[0.07] blur-[120px]"
-          />
           <div className="container-tafc relative z-10 py-32">
             <div className="max-w-3xl space-y-8">
               <SkeletonBarInk className="h-3 w-40 rounded-full" />

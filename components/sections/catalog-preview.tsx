@@ -41,7 +41,7 @@ export function CatalogPreview() {
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-8 lg:flex-col lg:items-start">
             <div>
               <DataLabel>{t("references")}</DataLabel>
-              <p className="mt-2 font-mono text-h3 text-tafc-ink tabular">
+              <p className="mt-2 font-display text-h3 text-tafc-ink tabular">
                 {String(PREVIEW_COUNT).padStart(2, "0")}
                 <span className="text-tafc-ink/35"> / {products.length}</span>
               </p>

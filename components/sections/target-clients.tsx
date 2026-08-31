@@ -116,7 +116,7 @@ export function TargetClients() {
       {/* ---- Caption rail ------------------------------------------------ */}
       <div className="relative border-t border-white/[0.12]">
         <div className="container-tafc">
-          <p className="py-4 font-mono text-data text-white/50 uppercase">{t("videoBadge")}</p>
+          <p className="py-4 text-data text-white/50 uppercase">{t("videoBadge")}</p>
         </div>
       </div>
     </section>

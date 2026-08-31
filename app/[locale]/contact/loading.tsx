@@ -15,10 +15,6 @@ export default function ContactLoading() {
       <main className="min-h-screen bg-white">
         {/* Hero band. */}
         <section className="relative isolate overflow-hidden bg-tafc-ink pt-32 pb-16 md:pt-40 md:pb-20">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-40 start-1/3 size-[36rem] rounded-full bg-tafc-accent/[0.07] blur-[120px]"
-          />
           <div className="container-tafc">
             <div className="max-w-3xl space-y-6">
               <SkeletonBarInk className="h-11 w-2/3 md:h-14" />

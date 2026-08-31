@@ -17,10 +17,6 @@ export default function AboutLoading() {
       <main className="min-h-screen bg-white">
         {/* Hero — same `85vh` / `95vh` as the real parallax section. */}
         <section className="relative flex h-[85vh] w-full items-center justify-center overflow-hidden bg-tafc-ink md:h-[95vh]">
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 left-1/2 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-tafc-accent/[0.07] blur-[120px]"
-          />
           <div className="container-tafc relative z-10 mt-16 text-center md:mt-0">
             <div className="mx-auto max-w-2xl space-y-5">
               <SkeletonBarInk className="mx-auto h-14 w-3/4 md:h-24" />

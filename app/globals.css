@@ -48,7 +48,8 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --radius: 0.75rem;
+  /* Card radius. The scale is 4 / 8 / 16 / full — see `@theme inline`. */
+  --radius: 1rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -95,76 +96,105 @@
 }
 
 @theme inline {
-  /* Fonts. `--font-sans` previously hardcoded the literal family "Inter", which
-     next/font never registers globally, so body text silently fell back to
-     system-ui. Point it at the variable next/font actually emits.
-     `--font-display` makes `font-display` resolve to Sora — the old `font-sora`
-     and `font-manrope` classes were never registered here and did nothing.
-     `--font-mono` previously named "Geist Mono", which is not loaded anywhere in
-     the app, so every `font-mono` element fell back to the browser default. It
-     now points at the JetBrains Mono variable emitted by next/font — the site's
-     third type role, carrying the spec/data layer (origins, calibers, pack
-     formats, index numbers). */
+  /* ==========================================================================
+     TYPE — two families, no more.
+       Sora  (`font-display`)  headings, display, stats, index numerals
+       Inter (`font-sans`)     everything else, INCLUDING the spec/data layer
+     JetBrains Mono was the third family and carried the spec voice. It is gone:
+     the data layer keeps its voice through `uppercase` + 0.1em tracking +
+     tabular figures, which Inter has properly. `font-serif` was also in use in
+     six places with no serif family ever registered, so it rendered as Times —
+     those are now `italic` on the sans face.
+     ========================================================================== */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-sora), var(--font-inter), ui-sans-serif, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
 
   /* ---- Fluid type scale -------------------------------------------------
-     One scale for the whole site. clamp() means no `text-2xl md:text-4xl
-     lg:text-6xl` chains — the size interpolates with the viewport instead. */
-  --text-eyebrow: 0.6875rem;
+     One scale for the whole site: 1.25 (major third) off a 16px base, so every
+     step is a real ratio rather than a hand-picked pixel value —
+       0.8 · 1 · 1.25 · 1.5625 · 1.953 · 2.441 · 3.052 · 3.815 · 4.768rem
+     Each fluid step interpolates between two ADJACENT scale members, hitting
+     its floor at a 360px viewport and its ceiling at 1440px. clamp() means no
+     `text-2xl md:text-4xl lg:text-6xl` chains anywhere in the app.
+
+     Heading line-heights sit in the 1.1–1.2 band. `--text-display` was 0.95 and
+     `--text-h1` 1.05 — both tighter than a heading should ever set, and the
+     descenders were touching the line below on the two-line hero. */
+
+  /* Small steps — one size, 0.8rem (12.8px), four different jobs. */
+  --text-eyebrow: 0.8rem;
   --text-eyebrow--line-height: 1;
-  --text-eyebrow--letter-spacing: 0.18em;
+  --text-eyebrow--letter-spacing: 0.16em;
   --text-eyebrow--font-weight: 600;
 
-  --text-display: clamp(2.75rem, 6.5vw, 5.5rem);
-  --text-display--line-height: 0.95;
-  --text-display--letter-spacing: -0.035em;
-  --text-display--font-weight: 700;
-
-  --text-h1: clamp(2.25rem, 4.6vw, 3.75rem);
-  --text-h1--line-height: 1.05;
-  --text-h1--letter-spacing: -0.03em;
-  --text-h1--font-weight: 700;
-
-  --text-h2: clamp(1.875rem, 3.4vw, 2.875rem);
-  --text-h2--line-height: 1.1;
-  --text-h2--letter-spacing: -0.02em;
-  --text-h2--font-weight: 700;
-
-  --text-h3: clamp(1.0625rem, 1.5vw, 1.375rem);
-  --text-h3--line-height: 1.25;
-  --text-h3--letter-spacing: -0.01em;
-  --text-h3--font-weight: 600;
-
-  --text-deck: clamp(1rem, 1.25vw, 1.1875rem);
-  --text-deck--line-height: 1.65;
-
-  --text-meta: 0.8125rem;
-  --text-meta--line-height: 1.45;
-
-  /* ---- Data layer -------------------------------------------------------
-     The spec/catalogue voice, set in mono. `data` is the small tracked label
-     that precedes a value (ORIGIN, CALIBER, RANGES); `stat` is the large
-     tabular numeral used for hard figures. Together these are what make the
-     page read as a trade document rather than a brochure. */
-  --text-data: 0.6875rem;
+  --text-data: 0.8rem;
   --text-data--line-height: 1.4;
   --text-data--letter-spacing: 0.1em;
   --text-data--font-weight: 500;
 
-  --text-stat: clamp(1.75rem, 2.6vw, 2.5rem);
-  --text-stat--line-height: 1;
-  --text-stat--letter-spacing: -0.03em;
-  --text-stat--font-weight: 600;
-
-  /* ---- Index numerals ---------------------------------------------------
-     The 01…07 markers down the ranges index. Ranges are a fixed, ordered
-     catalogue listing, so the numbers carry real reference information. */
-  --text-index: 0.75rem;
+  --text-index: 0.8rem;
   --text-index--line-height: 1;
   --text-index--letter-spacing: 0.04em;
   --text-index--font-weight: 500;
+
+  --text-meta: 0.8rem;
+  --text-meta--line-height: 1.5;
+
+  /* Body steps. */
+  --text-body: 1rem;
+  --text-body--line-height: 1.6;
+
+  --text-deck: clamp(1rem, 0.9167rem + 0.3704vw, 1.25rem);
+  --text-deck--line-height: 1.6;
+
+  /* Heading steps. */
+  --text-h3: clamp(1.25rem, 1.1458rem + 0.463vw, 1.5625rem);
+  --text-h3--line-height: 1.2;
+  --text-h3--letter-spacing: -0.01em;
+  --text-h3--font-weight: 600;
+
+  --text-h2: clamp(1.9531rem, 1.5869rem + 1.6277vw, 3.0518rem);
+  --text-h2--line-height: 1.15;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h2--font-weight: 700;
+
+  --text-h1: clamp(2.4414rem, 1.9836rem + 2.0345vw, 3.8147rem);
+  --text-h1--line-height: 1.1;
+  --text-h1--letter-spacing: -0.025em;
+  --text-h1--font-weight: 700;
+
+  --text-display: clamp(3.0518rem, 2.4796rem + 2.5432vw, 4.7684rem);
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 700;
+
+  /* Hard figures. Shares the `h2` step so a stat and a section title next to
+     each other are the same optical size — they are peers, not a hierarchy. */
+  --text-stat: clamp(1.9531rem, 1.5869rem + 1.6277vw, 3.0518rem);
+  --text-stat--line-height: 1.1;
+  --text-stat--letter-spacing: -0.02em;
+  --text-stat--font-weight: 600;
+
+  /* ==========================================================================
+     RADII — 4 / 8 / 16 / full. Four values, nothing between.
+     The vendored shadcn set references `xl`/`2xl`/`3xl`; those alias to 16px so
+     nothing in it breaks and no component can quietly reintroduce a fifth step.
+     ========================================================================== */
+  --radius-sm: 0.25rem; /* 4px  — chips, inputs, small badges */
+  --radius-md: 0.5rem; /*  8px  — buttons, thumbnails */
+  --radius-lg: 1rem; /*    16px — cards, panes, media */
+  --radius-xl: 1rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1rem;
+  --radius-full: 9999px;
+
+  /* ==========================================================================
+     SHADOWS — exactly two. There were six arbitrary values doing this job.
+     Both are cast in ink rather than black, so a lifted card reads as sitting
+     on the navy palette instead of on a grey page.
+     ========================================================================== */
+  --shadow-raise: 0 8px 24px -12px rgb(4 38 53 / 0.18);
+  --shadow-float: 0 20px 48px -24px rgb(4 38 53 / 0.28);
 
   /* ---- TAFC design-system colours ---- */
   --color-tafc-ink: var(--tafc-ink);
@@ -201,12 +231,6 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 16px);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -223,6 +247,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
   }
 }
 
@@ -230,12 +256,13 @@
 @layer utilities {
   /* ---- Section rhythm ---------------------------------------------------
      Vertical spacing and container width are decided once here instead of
-     being re-invented per section (they used to range py-16 → py-32). */
+     being re-invented per section (they used to range py-16 → py-32).
+     56px on a phone, 128px at 1600px and above. */
   .section-y {
-    padding-block: clamp(4.5rem, 9vw, 8.5rem);
+    padding-block: clamp(3.5rem, 8vw, 8rem);
   }
   .section-y-tight {
-    padding-block: clamp(3rem, 5.5vw, 5rem);
+    padding-block: clamp(3rem, 5vw, 6rem);
   }
   .container-tafc {
     width: 100%;
@@ -247,6 +274,12 @@
     .container-tafc {
       padding-inline: 2rem;
     }
+  }
+
+  /* Reading measure. Character-count-based, so it holds across all three
+     locales and every step of the fluid scale — `max-w-xl` does not. */
+  .measure {
+    max-width: 68ch;
   }
 
   /* Eyebrow rule — the teal hairline that precedes every section label.
@@ -269,7 +302,8 @@
   }
 
   /* Tabular numerals. Any figure that sits in a column — index numbers, stats,
-     calibers — needs these so digits don't jitter between rows. */
+     calibers — needs these so digits don't jitter between rows. Also what lets
+     the data layer read as data now that the mono family is gone. */
   .tabular {
     font-variant-numeric: tabular-nums;
   }
@@ -316,10 +350,10 @@
 }
 
 /* ==========================================================================
-   Reduced motion. Neutralises the marquee, the hero Ken Burns pan and every
-   transform-based scroll reveal, while leaving opacity fades intact so
-   content still appears. Framer Motion components additionally check
-   useReducedMotion() so their animations are skipped rather than snapped.
+   Reduced motion. Neutralises the marquee and every transform-based scroll
+   reveal, while leaving opacity fades intact so content still appears. Framer
+   Motion components additionally check useReducedMotion() so their animations
+   are skipped rather than snapped.
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *,

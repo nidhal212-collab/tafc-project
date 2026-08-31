@@ -82,10 +82,6 @@ export default function ContactPage() {
 
                 {/* ---- Hero band --------------------------------------------- */}
                 <section className="relative isolate overflow-hidden bg-tafc-ink pt-32 pb-16 md:pt-40 md:pb-20">
-                    <div
-                        aria-hidden="true"
-                        className="absolute -top-40 start-1/3 -z-10 size-[36rem] rounded-full bg-tafc-accent/[0.07] blur-[120px]"
-                    />
                     <div className="container-tafc">
                         <motion.div
                             initial={{ opacity: 0, y: 24 }}

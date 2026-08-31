@@ -672,6 +672,7 @@
       "viewCatalog": "عرض الكتالوج الكامل",
       "discoverPremium": "اكتشف منتجاتنا",
       "productsCount": "منتج",
+      "productsCountLabel": "{count, plural, zero {لا توجد منتجات} one {منتج واحد} two {منتجان} few {# منتجات} many {# منتجًا} other {# منتج}}",
       "resultsTitle": "نتائج البحث",
       "viewProduct": "عرض المنتج",
       "requestQuote": "طلب عرض",

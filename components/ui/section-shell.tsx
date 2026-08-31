@@ -1,6 +1,5 @@
 "use client"
 
-import { motion, useReducedMotion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 export type SectionTone = "light" | "shell" | "ink"
@@ -32,6 +31,11 @@ export interface SectionShellProps {
  * Wraps a page section: owns the surface colour and the vertical rhythm so
  * neither is re-decided per section. Padding comes from `.section-y` and
  * width from `.container-tafc`, both defined in `app/globals.css`.
+ *
+ * `overflow-clip` rather than `overflow-hidden`: hidden establishes a scroll
+ * container, which silently kills `position: sticky` on any descendant. Two
+ * sections rely on sticky children (the ranges index pane and the featured
+ * rail's header column), so they were one CSS property away from breaking.
  */
 export function SectionShell({
     children,
@@ -46,7 +50,7 @@ export function SectionShell({
         <section
             id={id}
             className={cn(
-                "relative isolate overflow-hidden",
+                "relative isolate overflow-clip",
                 TONE_SURFACE[tone],
                 tight ? "section-y-tight" : "section-y",
                 className,
@@ -73,30 +77,6 @@ export function SectionRule({ tone = "light" }: { tone?: SectionTone }) {
                 "h-px w-full",
                 tone === "ink" ? "bg-tafc-accent/15" : "bg-tafc-ink/10",
             )}
-        />
-    )
-}
-
-/**
- * Decorative ambient glow for ink sections. Kept extremely subtle — the
- * previous design stacked multiple radial gradients plus a noise SVG per
- * section, which muddied the navy.
- */
-export function InkGlow({ className }: { className?: string }) {
-    const reduceMotion = useReducedMotion()
-
-    return (
-        <motion.div
-            aria-hidden="true"
-            className={cn(
-                "pointer-events-none absolute -z-10 rounded-full bg-tafc-accent/[0.07] blur-[120px]",
-                "size-[36rem]",
-                className,
-            )}
-            initial={reduceMotion ? undefined : { opacity: 0 }}
-            whileInView={reduceMotion ? undefined : { opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.2 }}
         />
     )
 }

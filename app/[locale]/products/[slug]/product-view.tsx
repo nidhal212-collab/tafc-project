@@ -247,11 +247,11 @@ export function ProductView({ product, relatedProducts }: ProductViewProps) {
                                 {product.name}
                             </h1>
                             {product.latinName && (
-                                <p className="mt-2 font-serif text-h3 text-tafc-ink/40 italic">
+                                <p className="mt-2 text-h3 text-tafc-ink/40 italic">
                                     {product.latinName}
                                 </p>
                             )}
-                            <p className="mt-4 inline-block font-mono text-meta tracking-tight text-tafc-ink/50">
+                            <p className="mt-4 inline-block text-meta tracking-tight text-tafc-ink/50">
                                 TAFC/{product.slug.toUpperCase().slice(0, 8)}-{product.id.padStart(3, "0")}
                             </p>
                         </motion.div>

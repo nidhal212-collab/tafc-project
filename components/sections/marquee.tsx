@@ -59,7 +59,7 @@ export function Marquee() {
             <div key={setIndex} className="flex shrink-0">
               {MARQUEE_ITEM_KEYS.map((key) => (
                 <div key={`${setIndex}-${key}`} className="flex items-center gap-7 px-7">
-                  <span className="font-mono text-data whitespace-nowrap text-white/60 uppercase">
+                  <span className="text-data whitespace-nowrap text-white/60 uppercase">
                     {t(`items.${key}`)}
                   </span>
                   <span aria-hidden="true" className="h-3 w-px bg-tafc-accent/60" />

@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation"
 import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Reveal } from "@/components/ui/reveal"
-import { SectionShell, InkGlow } from "@/components/ui/section-shell"
+import { SectionShell } from "@/components/ui/section-shell"
 import { SectionIntro } from "@/components/ui/section-intro"
 import { DataLabel } from "@/components/ui/spec"
 
@@ -48,8 +48,6 @@ export function ContactPreview() {
   return (
     <>
       <SectionShell tone="ink">
-        <InkGlow className="-bottom-48 end-0" />
-
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
           <SectionIntro
             eyebrow={t("badge")}

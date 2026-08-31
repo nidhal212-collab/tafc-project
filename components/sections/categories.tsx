@@ -42,6 +42,7 @@ type ProductsDataTranslations = {
  */
 export function Categories() {
   const t = useTranslations("categories")
+  const tUi = useTranslations("productsData.ui")
   const messages = useMessages()
   const productsData = messages.productsData as unknown as ProductsDataTranslations | undefined
 
@@ -124,7 +125,7 @@ export function Categories() {
                 <div className="absolute inset-0 bg-gradient-to-t from-tafc-ink via-tafc-ink/25 to-transparent" />
 
                 <div className="absolute inset-x-0 bottom-0 p-7">
-                  <span className="font-mono text-index text-tafc-accent tabular">
+                  <span className="font-display text-index text-tafc-accent tabular">
                     {String(active + 1).padStart(2, "0")}
                   </span>
                   <p className="mt-2 font-display text-h3 text-white">
@@ -168,7 +169,7 @@ export function Categories() {
 
                     <span
                       className={cn(
-                        "font-mono text-index tabular transition-colors duration-300 sm:ps-4",
+                        "font-display text-index tabular transition-colors duration-300 sm:ps-4",
                         isActive ? "text-tafc-accent" : "text-tafc-ink/35"
                       )}
                     >
@@ -201,8 +202,8 @@ export function Categories() {
                       </span>
                     </span>
 
-                    <span className="hidden shrink-0 font-mono text-data text-tafc-ink/40 uppercase sm:block">
-                      {category.count}
+                    <span className="hidden shrink-0 text-data text-tafc-ink/65 uppercase tabular sm:block">
+                      {tUi("productsCountLabel", { count: category.count })}
                     </span>
 
                     <ArrowRight

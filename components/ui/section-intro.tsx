@@ -61,7 +61,9 @@ export function SectionIntro({
                 <span
                     className={cn(
                         "eyebrow-rule mb-5 inline-flex items-center text-eyebrow uppercase",
-                        isInk ? "text-tafc-accent" : "text-tafc-ink/55",
+                        // /65 is the muted floor — 5.05:1 on white. This was
+                        // /55, which measures 3.70:1 and fails AA.
+                        isInk ? "text-tafc-accent" : "text-tafc-ink/65",
                     )}
                 >
                     {eyebrow}
@@ -83,7 +85,7 @@ export function SectionIntro({
             {deck && (
                 <p
                     className={cn(
-                        "mt-5 max-w-2xl text-deck text-pretty",
+                        "mt-5 measure text-deck text-pretty",
                         isInk ? "text-white/65" : "text-tafc-ink/65",
                     )}
                 >
@@ -113,7 +115,7 @@ export function Eyebrow({
         <span
             className={cn(
                 "eyebrow-rule inline-flex items-center text-eyebrow uppercase",
-                tone === "ink" ? "text-tafc-accent" : "text-tafc-ink/55",
+                tone === "ink" ? "text-tafc-accent" : "text-tafc-ink/65",
                 className,
             )}
         >

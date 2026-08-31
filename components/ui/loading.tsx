@@ -78,12 +78,6 @@ export function AppLoadingScreen() {
 
     return (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-tafc-ink">
-            {/* Teal depth glow, same recipe as `InkGlow` on the dark sections. */}
-            <div
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-1/2 size-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-tafc-accent/[0.07] blur-[120px]"
-            />
-
             <motion.div
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}

@@ -1,59 +1,78 @@
+import { products } from "@/lib/products-data"
+
 export type Category = {
   slug: string
   name: string
   description: string
   image: string
-  count: string
+  /**
+   * How many catalogue references this range actually holds. Derived, never
+   * typed — see `categoryCount` below.
+   */
+  count: number
 }
 
-export const categories: Category[] = [
+/**
+ * Counts the products filed under a range.
+ *
+ * These were previously hardcoded display strings — `"12+ produits"`,
+ * `"8+ produits"`, `"20+ produits"` — against real totals of 7, 3 and 14. The
+ * mollusques range read `"10+ produits"` and holds one. They were also written
+ * in French, so `/en` and `/ar` rendered "produits" too.
+ *
+ * The number now comes from the data, so it cannot drift and cannot overstate.
+ * The unit word is supplied by the caller from `productsData.ui.productsCount`.
+ */
+function categoryCount(slug: string): number {
+  return products.filter((product) => product.categorySlug === slug).length
+}
+
+const RANGES = [
   {
     slug: "crevettes-crustaces",
     name: "Crevettes & Crustacés",
     description: "Crevettes blanches, rouges, gambas et crustacés de qualité premium méditerranéenne.",
     image: "/giant-prawns-shrimp-on-ice-premium.jpg",
-    count: "12+ produits",
   },
   {
     slug: "calamars-poulpes",
     name: "Calamars & Poulpes",
     description: "Calamars tubes, tentacules et poulpes entiers pêchés en Méditerranée.",
     image: "/fresh-calamari-squid-mediterranean-seafood-ice.jpg",
-    count: "8+ produits",
   },
   {
     slug: "mollusques",
     name: "Mollusques",
     description: "Moules, huîtres, palourdes et coquillages frais ou surgelés de nos côtes.",
     image: "/fresh-mussels-shellfish-seafood-ice-premium.jpg",
-    count: "10+ produits",
   },
   {
     slug: "poissons-mediterranee",
     name: "Poissons Méditerranée",
     description: "Bar, dorade, merlan, sardines et poissons nobles de la Méditerranée.",
     image: "/fresh-sea-bream-dorade-fish-on-ice.jpg",
-    count: "20+ produits",
   },
   {
     slug: "saumon-thon",
     name: "Saumon & Thon",
     description: "Filets, pavés et blocs de saumon atlantique et thon de qualité export.",
     image: "/fresh-salmon-fillet-premium-seafood-ice.jpg",
-    count: "6+ produits",
   },
   {
     slug: "caviar-haute-gastronomie",
     name: "Caviar & Haute Gastronomie",
     description: "Caviar d'exception et produits de luxe pour les établissements prestigieux.",
     image: "/luxury-caviar-premium-gourmet-seafood.jpg",
-    count: "4+ produits",
   },
   {
     slug: "oeufs-de-poisson-boutargue",
     name: "Œufs de poisson & Boutargue",
     description: "Œufs de poisson frais, congelés et séchés (boutargue), destinés aux professionnels et à l’export.",
     image: "/fish-roe-boutargue-premium-seafood.jpg",
-    count: "3+ produits",
   },
-]
+] as const
+
+export const categories: Category[] = RANGES.map((range) => ({
+  ...range,
+  count: categoryCount(range.slug),
+}))

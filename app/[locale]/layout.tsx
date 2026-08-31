@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter, Sora, JetBrains_Mono } from "next/font/google"
+import { Inter, Sora } from "next/font/google"
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
@@ -11,13 +11,15 @@ import { cn } from "@/lib/utils"
 import { LoadingProvider } from "@/components/ui/loading-provider"
 import "../globals.css"
 
-// Optimized font loading with display swap for better performance.
-// Sora = display (headings), Inter = body/UI, JetBrains Mono = the spec/data
-// layer (origins, calibers, index numerals, stat labels). Manrope was previously
-// loaded here but only ever referenced via `font-manrope`, which is not
-// registered in globals.css `@theme` — so it downloaded on every page and
-// rendered nothing. Mono is limited to two weights for the same reason: only
-// 400 and 500 are used.
+// Two families, both with `display: swap`.
+//   Sora  = display — headings, stats, index numerals
+//   Inter = everything else, including the spec/data layer
+// JetBrains Mono was a third download carrying the spec voice (origins,
+// calibers, pack formats). That voice is now uppercase + 0.1em tracking +
+// tabular figures on Inter, which reads the same and costs one fewer font.
+// Manrope was loaded here too, referenced only via a `font-manrope` class that
+// globals.css never registered — it downloaded on every page and rendered
+// nothing.
 const sora = Sora({
     subsets: ["latin"],
     weight: ["400", "500", "600", "700", "800"],
@@ -28,13 +30,6 @@ const sora = Sora({
 const inter = Inter({
     subsets: ["latin"],
     variable: "--font-inter",
-    display: "swap",
-})
-
-const jetbrainsMono = JetBrains_Mono({
-    subsets: ["latin"],
-    weight: ["400", "500"],
-    variable: "--font-jetbrains",
     display: "swap",
 })
 
@@ -177,7 +172,6 @@ export default async function LocaleLayout({
                 className={cn(
                     inter.variable,
                     sora.variable,
-                    jetbrainsMono.variable,
                     "font-sans antialiased min-h-screen bg-white text-tafc-ink",
                     "selection:bg-tafc-accent selection:text-tafc-ink"
                 )}

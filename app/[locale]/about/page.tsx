@@ -109,7 +109,7 @@ export default function AboutPage() {
                   reads as a dirty smear, so the display line is solid now. */}
               <motion.h1 variants={heroTextVariant} className="font-display text-display text-balance">
                 <span className="block">{t('hero.titlePart1')}</span>
-                <span className="font-serif font-light italic text-tafc-accent">
+                <span className="font-light italic text-tafc-accent">
                   {t('hero.titlePart2')}
                 </span>
               </motion.h1>
@@ -208,7 +208,7 @@ export default function AboutPage() {
                   />
                 </div>
                 <div className="absolute -bottom-6 -start-6 z-20 hidden max-w-xs rounded-2xl border border-tafc-ink/10 bg-white p-7 lg:block">
-                  <p className="text-center font-serif text-h3 text-tafc-ink italic">
+                  <p className="text-center text-h3 text-tafc-ink italic">
                     &ldquo;{t('advantage.text').split(',')[0]}…&rdquo;
                   </p>
                 </div>
@@ -289,7 +289,7 @@ export default function AboutPage() {
                   <span className="text-tafc-accent">{t('vision.titleHighlight')}</span><br />
                   {t('vision.titlePart2')}
                 </h2>
-                <p className="mt-10 max-w-xl border-t border-tafc-ink/[0.08] pt-8 font-serif text-h3 text-tafc-ink/70 italic">
+                <p className="mt-10 max-w-xl border-t border-tafc-ink/[0.08] pt-8 text-h3 text-tafc-ink/70 italic">
                   &ldquo;{t('hero.slogan')}&rdquo;
                 </p>
               </motion.div>
@@ -302,11 +302,6 @@ export default function AboutPage() {
                 className="relative"
               >
                 <div className="relative isolate z-10 flex min-h-[32rem] flex-col justify-between overflow-hidden rounded-2xl bg-tafc-ink p-10 text-white md:p-14">
-                  <div
-                    aria-hidden="true"
-                    className="absolute -top-1/4 -end-1/4 -z-10 size-[25rem] rounded-full bg-tafc-accent/[0.12] blur-[100px]"
-                  />
-
                   <div>
                     <span className="mb-8 flex size-14 items-center justify-center rounded-xl bg-tafc-accent/10 ring-1 ring-inset ring-tafc-accent/20">
                       <Globe2 aria-hidden="true" className="size-6 text-tafc-accent" />
@@ -383,7 +378,7 @@ function ExpandingCard({
           <span className="flex size-12 items-center justify-center rounded-full border border-white/20 bg-white/[0.06] backdrop-blur-md transition-colors duration-500 group-hover:border-tafc-accent group-hover:bg-tafc-accent">
             <Icon aria-hidden="true" className="size-5 text-white transition-colors duration-500 group-hover:text-tafc-ink" />
           </span>
-          <span className="font-mono text-meta tracking-[0.2em] text-white/40 uppercase">
+          <span className="text-meta tracking-[0.2em] text-white/40 uppercase">
             0{index + 1}
           </span>
         </div>

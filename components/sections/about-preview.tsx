@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation"
 import { Ship, Fish, Award, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Reveal } from "@/components/ui/reveal"
-import { SectionShell, InkGlow } from "@/components/ui/section-shell"
+import { SectionShell } from "@/components/ui/section-shell"
 import { SectionIntro } from "@/components/ui/section-intro"
 import { DataLabel } from "@/components/ui/spec"
 
@@ -38,8 +38,6 @@ export function AboutPreview() {
 
   return (
     <SectionShell tone="ink">
-      <InkGlow className="-top-40 start-1/4" />
-
       <SectionIntro
         eyebrow={t("badge")}
         tone="ink"
@@ -66,7 +64,7 @@ export function AboutPreview() {
               aria-hidden="true"
               className="absolute inset-0 bg-gradient-to-t from-tafc-ink/80 via-transparent to-transparent"
             />
-            <span className="absolute bottom-5 start-5 rounded-full bg-tafc-ink/70 px-3 py-1.5 font-mono text-data text-white uppercase ring-1 ring-inset ring-white/15 backdrop-blur-sm">
+            <span className="absolute bottom-5 start-5 rounded-full bg-tafc-ink/70 px-3 py-1.5 text-data text-white uppercase ring-1 ring-inset ring-white/15 backdrop-blur-sm">
               {t("modernFleets")}
             </span>
           </div>
