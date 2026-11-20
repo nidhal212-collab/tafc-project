@@ -1,7 +1,6 @@
 "use client"
 
-import { useTranslations, useLocale } from "next-intl"
-import { motion, useReducedMotion } from "framer-motion"
+import { useTranslations } from "next-intl"
 
 const MARQUEE_ITEM_KEYS = [
   "premiumQuality",
@@ -14,60 +13,53 @@ const MARQUEE_ITEM_KEYS = [
 ]
 
 /**
- * The hero's base rail.
+ * The claim ticker.
  *
- * Previously a standalone `slate-900` band with a cyan bullet between items,
- * which read as a second section stacked under the hero. Now it shares the
- * hero's navy so the two form a single dark block, with teal hairlines instead
- * of bullets, and it is set in the mono face so the claims sit in the same
- * data layer as the hero manifest bar directly above it. Layout stays forced to
- * `dir="ltr"` — the scroll direction is handled in the animation so RTL reads
- * outward-to-inward, as before.
+ * It sat on navy, sharing the old hero's ground so the two read as one dark
+ * block. With a salt hero there is nothing to share: a 51px navy stripe between
+ * two light bands would be a hard interruption for no reason. So it becomes a
+ * ruled salt ticker — hairline above and below, ink type in the data voice,
+ * accent hairlines between items — which also keeps it visually distinct from
+ * the split hero directly above it.
+ *
+ * The loop is pure CSS: one keyframe translating the track by exactly one set
+ * width (25% of four duplicated sets), which is cheaper than a JS loop, pauses
+ * on hover for a reader who wants a claim, and is neutralised wholesale by the
+ * global reduced-motion rule. Layout stays forced to `dir="ltr"`; RTL flips the
+ * keyframe direction instead.
  */
 export function Marquee() {
   const t = useTranslations("marquee")
-  const locale = useLocale()
-  const isRTL = locale === "ar"
-  const reduceMotion = useReducedMotion()
 
   return (
     <section
-      className="relative overflow-hidden border-b border-white/[0.08] bg-tafc-ink py-4"
+      className="group relative overflow-hidden border-b border-tafc-ink/12 bg-tafc-salt py-4"
       dir="ltr"
     >
-      {/* Gradient fade edges */}
-      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-tafc-ink to-transparent sm:w-28" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-tafc-ink to-transparent sm:w-28" />
+      {/* Fade edges, in the ground colour so the track dissolves rather than
+          being cut off at the gutter. */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-20 bg-gradient-to-r from-tafc-salt to-transparent sm:w-28" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-20 bg-gradient-to-l from-tafc-salt to-transparent sm:w-28" />
 
       <div className="flex overflow-hidden">
-        <motion.div
-          className="flex flex-nowrap"
-          animate={
-            reduceMotion ? undefined : { x: isRTL ? ["-25%", "0%"] : ["0%", "-25%"] }
-          }
-          transition={{
-            x: {
-              repeat: Infinity,
-              repeatType: "loop",
-              duration: 32,
-              ease: "linear",
-            },
-          }}
+        <div
+          className="animate-marquee flex flex-nowrap group-hover:[animation-play-state:paused] rtl:[animation-direction:reverse]"
+          style={{ animationDuration: "48s" }}
         >
           {/* Four copies so the 25% loop lands seamlessly. */}
           {[...Array(4)].map((_, setIndex) => (
-            <div key={setIndex} className="flex shrink-0">
+            <div key={setIndex} className="flex shrink-0" aria-hidden={setIndex > 0 || undefined}>
               {MARQUEE_ITEM_KEYS.map((key) => (
                 <div key={`${setIndex}-${key}`} className="flex items-center gap-7 px-7">
-                  <span className="text-data whitespace-nowrap text-white/60 uppercase">
+                  <span className="text-data whitespace-nowrap text-tafc-ink/65 uppercase">
                     {t(`items.${key}`)}
                   </span>
-                  <span aria-hidden="true" className="h-3 w-px bg-tafc-accent/60" />
+                  <span aria-hidden="true" className="h-3 w-px bg-tafc-accent/50" />
                 </div>
               ))}
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   )

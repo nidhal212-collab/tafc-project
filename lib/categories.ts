@@ -37,14 +37,8 @@ const RANGES = [
   {
     slug: "calamars-poulpes",
     name: "Calamars & Poulpes",
-    description: "Calamars tubes, tentacules et poulpes entiers pêchés en Méditerranée.",
+    description: "Calamars tubes, tentacules, poulpes entiers et préparations de fruits de mer.",
     image: "/fresh-calamari-squid-mediterranean-seafood-ice.jpg",
-  },
-  {
-    slug: "mollusques",
-    name: "Mollusques",
-    description: "Moules, huîtres, palourdes et coquillages frais ou surgelés de nos côtes.",
-    image: "/fresh-mussels-shellfish-seafood-ice-premium.jpg",
   },
   {
     slug: "poissons-mediterranee",

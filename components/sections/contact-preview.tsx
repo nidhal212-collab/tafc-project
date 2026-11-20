@@ -1,8 +1,9 @@
 "use client"
 
 import { useTranslations } from "next-intl"
+import Image from "next/image"
 import { Link } from "@/i18n/navigation"
-import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react"
+import { FacebookLogo, InstagramLogo } from "@phosphor-icons/react"
 import { Button } from "@/components/ui/button"
 import { Reveal } from "@/components/ui/reveal"
 import { SectionShell } from "@/components/ui/section-shell"
@@ -18,31 +19,35 @@ import { DataLabel } from "@/components/ui/spec"
 const SOCIAL_LINKS = [
   {
     href: "https://www.facebook.com/profile.php?id=61585917932963",
-    icon: Facebook,
+    icon: FacebookLogo,
     label: "Facebook",
   },
-  { href: "https://www.instagram.com/tafc.seafood/", icon: Instagram, label: "Instagram" },
+  { href: "https://www.instagram.com/tafc.seafood/", icon: InstagramLogo, label: "Instagram" },
 ] as const
 
 /**
- * Closing conversion band, on navy so it flows straight into the dark footer
- * instead of stopping at a light seam.
+ * Closing conversion band, and the second of the page's two ink bands. It sits on
+ * ink so it flows straight into the dark footer instead of stopping at a light
+ * seam — the page closes on one continuous dark block.
  *
  * Restructured from a 50/50 split with a live Google Maps iframe filling half the
  * band. Two problems with that: the interactive map was the largest and heaviest
  * element in the page's most important section, and it pulled focus from the one
  * action that matters. The contact details are now three spec columns across the
- * full width, and the map is a desaturated full-bleed strip along the bottom —
- * still a real map, but doing the job of a location graphic and handing off into
- * the footer.
+ * full width — the same hairline device as the product cards and the ranges
+ * index, at band scale.
+ *
+ * The channel labels carry no icons. "Email", "Téléphone" and "Basé à" already
+ * say what an envelope, a handset and a pin would say, and on a dark band three
+ * accent-coloured glyphs are three objects competing with the values beside them.
  */
 export function ContactPreview() {
   const t = useTranslations("contact")
 
   const rows = [
-    { icon: Mail, label: t("channels.email"), values: ["info@tafc.tn"] },
-    { icon: Phone, label: t("channels.phone"), values: ["+216 98 62 11 28", "+216 98 62 19 38"] },
-    { icon: MapPin, label: t("channels.based"), values: [t("location")] },
+    { label: t("channels.email"), values: ["info@tafc.tn"] },
+    { label: t("channels.phone"), values: ["+216 98 62 11 28", "+216 98 62 19 38"] },
+    { label: t("channels.based"), values: [t("location")] },
   ]
 
   return (
@@ -50,7 +55,6 @@ export function ContactPreview() {
       <SectionShell tone="ink">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
           <SectionIntro
-            eyebrow={t("badge")}
             title={t("title")}
             deck={t("description")}
             tone="ink"
@@ -59,7 +63,7 @@ export function ContactPreview() {
 
           <Reveal delay={0.1} className="shrink-0 lg:pb-2">
             <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:gap-8">
-              <Button asChild size="xl" variant="action">
+              <Button asChild size="xl" variant="salt">
                 <Link href="/contact">{t("cta")}</Link>
               </Button>
 
@@ -71,7 +75,7 @@ export function ContactPreview() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={social.label}
-                    className="inline-flex size-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-tafc-accent/60 hover:text-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/40 focus-visible:outline-none"
+                    className="inline-flex size-11 items-center justify-center rounded-sm border border-white/20 text-white/75 transition-colors hover:border-tafc-accent-bright hover:text-tafc-accent-bright focus-visible:ring-3 focus-visible:ring-tafc-accent-bright/40 focus-visible:outline-none"
                   >
                     <social.icon aria-hidden="true" className="size-4" />
                   </a>
@@ -83,21 +87,20 @@ export function ContactPreview() {
 
         {/* ---- Channels --------------------------------------------------- */}
         <Reveal delay={0.16} className="mt-16">
-          <dl className="grid gap-px border-t border-tafc-ink-line sm:grid-cols-3 sm:gap-0">
+          <dl className="grid border-t border-white/10 sm:grid-cols-3">
             {rows.map((row, index) => (
               <div
                 key={row.label}
-                className={`flex flex-col gap-3 border-b border-tafc-ink-line py-6 sm:border-b-0 ${
-                  index > 0 ? "sm:border-s sm:border-tafc-ink-line sm:ps-8" : ""
+                className={`flex flex-col gap-3 border-b border-white/10 py-7 sm:border-b-0 ${
+                  index > 0 ? "sm:border-s sm:border-white/10 sm:ps-8" : ""
                 } ${index < rows.length - 1 ? "sm:pe-8" : ""}`}
               >
-                <dt className="flex items-center gap-2.5">
-                  <row.icon aria-hidden="true" className="size-3.5 shrink-0 text-tafc-accent" />
+                <dt>
                   <DataLabel tone="ink">{row.label}</DataLabel>
                 </dt>
                 <dd className="flex flex-col gap-1">
                   {row.values.map((value) => (
-                    <span key={value} className="font-display text-h3 font-medium text-white">
+                    <span key={value} className="font-display text-h3 text-white">
                       {value}
                     </span>
                   ))}
@@ -109,25 +112,45 @@ export function ContactPreview() {
       </SectionShell>
 
       {/* ---- Location strip ------------------------------------------------ */}
-      {/* Full-bleed, desaturated, and flush against the footer, with a navy fade
-          over the top edge so it reads as part of the band rather than a
-          pasted-in embed. It sits outside `SectionShell` so the shell's bottom
-          padding doesn't leave a navy gap above it. */}
-      <div className="relative isolate bg-tafc-ink">
+      {/* A fabricated-token country-level embed communicates no address and
+          third-parties a slow iframe on every page load. The locations are
+          stated instead: two shores, one line each, flush against the footer
+          so the band still reads as one dark block. The harbor photograph
+          sits behind at low opacity under an ink wash — the same treatment
+          the footer's ocean band uses — so the strip is a place, not a
+          text-on-ink gap. */}
+      <div className="relative isolate border-t border-white/10 bg-tafc-ink">
+        <Image
+          src="/mediterranean-fishing-boats-harbor-tunisia-sunrise.jpg"
+          alt=""
+          aria-hidden="true"
+          fill
+          quality={70}
+          sizes="100vw"
+          className="photo-grade object-cover object-center opacity-[0.16]"
+        />
+        {/* Ink wash: keeps the strip unmistakably part of the band while the
+            photo gives it depth underneath. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-tafc-ink to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-tafc-ink via-tafc-ink/85 to-tafc-ink/60 rtl:bg-gradient-to-l"
         />
-        <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3311542.5044073225!2d8.5!3d36.5!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x125595448316a4e1%3A0x3a84333aaa019bef!2sTunisia!5e0!3m2!1sen!2sus!4v1234567890"
-          width="100%"
-          height="100%"
-          className="block h-[16rem] w-full border-0 opacity-70 contrast-110 grayscale lg:h-[22rem]"
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title={t("mapTitle")}
-        />
+        <div className="container-tafc relative py-12">
+          <dl className="grid gap-10 sm:grid-cols-2 sm:gap-8">
+            <div>
+              <dt>
+                <DataLabel tone="ink">{t("channels.based")}</DataLabel>
+              </dt>
+              <dd className="mt-3 font-display text-h2 text-white">{t("location")}</dd>
+            </div>
+            <div>
+              <dt>
+                <DataLabel tone="ink">{t("exportLabel")}</DataLabel>
+              </dt>
+              <dd className="mt-3 font-display text-h2 text-white">{t("exportMarkets")}</dd>
+            </div>
+          </dl>
+        </div>
       </div>
     </>
   )

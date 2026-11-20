@@ -2,20 +2,21 @@
 
 import { cn } from "@/lib/utils"
 
-export type SectionTone = "light" | "shell" | "ink"
+export type SectionTone = "salt" | "paper" | "ink"
 
 const TONE_SURFACE: Record<SectionTone, string> = {
-    light: "bg-white text-tafc-ink",
-    shell: "bg-tafc-shell text-tafc-ink",
+    salt: "bg-tafc-salt text-tafc-ink",
+    paper: "bg-tafc-paper text-tafc-ink",
     ink: "bg-tafc-ink text-white",
 }
 
 export interface SectionShellProps {
     children: React.ReactNode
     /**
-     * Surface colour. The homepage alternates ink → light → shell → ink →
-     * light → shell → ink so the page reads as deliberate bands rather than
-     * ten separately-invented gradients.
+     * Surface colour. Salt is the default ground; paper is a half-step lighter
+     * for sections that need to read as a raised plane; ink appears exactly
+     * twice on the homepage plus the footer, so a dark band still means
+     * something when it arrives.
      */
     tone?: SectionTone
     /** Set false to opt out of `.container-tafc` for full-bleed content. */
@@ -33,13 +34,13 @@ export interface SectionShellProps {
  * width from `.container-tafc`, both defined in `app/globals.css`.
  *
  * `overflow-clip` rather than `overflow-hidden`: hidden establishes a scroll
- * container, which silently kills `position: sticky` on any descendant. Two
- * sections rely on sticky children (the ranges index pane and the featured
- * rail's header column), so they were one CSS property away from breaking.
+ * container, which silently kills `position: sticky` on any descendant. The
+ * ranges index pane relies on a sticky child, so it was one CSS property away
+ * from breaking.
  */
 export function SectionShell({
     children,
-    tone = "light",
+    tone = "salt",
     contained = true,
     tight = false,
     id,
@@ -67,15 +68,15 @@ export function SectionShell({
 
 /**
  * A hairline divider for stacking two same-tone sections. On ink surfaces it
- * uses the teal accent at low opacity; on light surfaces, a neutral rule.
+ * uses the bright accent at low opacity; on light surfaces, a neutral rule.
  */
-export function SectionRule({ tone = "light" }: { tone?: SectionTone }) {
+export function SectionRule({ tone = "salt" }: { tone?: SectionTone }) {
     return (
         <div
             aria-hidden="true"
             className={cn(
                 "h-px w-full",
-                tone === "ink" ? "bg-tafc-accent/15" : "bg-tafc-ink/10",
+                tone === "ink" ? "bg-tafc-accent-bright/15" : "bg-tafc-ink/10",
             )}
         />
     )

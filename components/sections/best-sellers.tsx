@@ -1,10 +1,11 @@
 "use client"
 
-import { useRef } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useTranslations, useMessages, useLocale } from "next-intl"
 import { Link } from "@/i18n/navigation"
 import Image from "next/image"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import useEmblaCarousel from "embla-carousel-react"
+import { CaretLeft, CaretRight } from "@phosphor-icons/react"
 import {
   getBestSellers,
   getTranslatedProduct,
@@ -13,207 +14,242 @@ import {
 } from "@/lib/products-data"
 import { SectionShell } from "@/components/ui/section-shell"
 import { SectionIntro } from "@/components/ui/section-intro"
-import { Reveal } from "@/components/ui/reveal"
 import { DataLabel } from "@/components/ui/spec"
-
-/** The three products the old hero carried on its rotated floating cards. */
-const FEATURED_KEYS = ["seaBass", "seaBream", "prawns"] as const
+import { cn } from "@/lib/utils"
 
 /**
- * Featured-selection rail — the second of the three product showcases.
+ * Featured-selection carousel — the second of the three product showcases.
  *
- * Swiper is gone from this section. It carried an autoplay loop, a pagination
- * row, a `<style jsx global>` block patching its own CSS, and three stylesheet
- * imports, to deliver a horizontal list of five cards. That is now native
- * scroll-snap (`.rail` in globals.css): no JS driving the scroll, keyboard- and
- * trackpad-scrollable by default, and it respects `prefers-reduced-motion`
- * through the existing global rule instead of a second opt-out.
+ * A plain Embla (v8) rail: no scroll-driven scale, no depth trickery. Every
+ * photograph sits at full size; the only motion is the drag itself plus a quiet
+ * image zoom on hover, which reads as product feedback rather than decoration.
+ * Not looped — a catalogue rail should meet an end, so the boundary buttons
+ * disable at the edges instead of cycling forever.
  *
- * Structurally the section is a sticky header beside a rail that bleeds off the
- * viewport edge, rather than a centred header above a contained carousel. The
- * bleed is what tells a reader there is more to the right; the old pagination
- * bullets were doing that job in a much weaker way.
+ * Layout leads with a full-width header — eyebrow, title and deck stacked at the
+ * top with the scroll controls bottom-aligned to their end — over a full-bleed
+ * rail that runs off the viewport's end edge. The slide basis is set on the
+ * viewport with responsive percentages so a peek of the next plate always says
+ * "scroll" better than any arrow: ~1.2 slides on a phone, ~2.4 from `md`, ~3.2
+ * from `lg` where the rail spans the whole width.
  *
- * The three strings from the old hero's floating product cards live in the
- * sticky column, where they read as a contents list for the rail beside them.
- *
- * Cards are navy against the shell surface and carry a real spec table — origin,
- * chilled/frozen, caliber, pack format — so this section cannot be confused with
- * either the ranges index above or the white catalogue cards below.
+ * Squared controls, data-voice labels and paper plates follow the rest of the site.
  */
 export function BestSellers() {
   const t = useTranslations("bestSellers")
-  const tHero = useTranslations("hero")
   const tUi = useTranslations("productsData.ui")
   const messages = useMessages()
   const locale = useLocale()
-  const isRTL = locale === "ar"
   const translations = messages.productsData as unknown as ProductsDataTranslations
 
-  const railRef = useRef<HTMLUListElement>(null)
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    // Embla defaults to LTR and does not read the DOM's dir, so the locale
+    // drives it. Same value on server and client, so hydration is stable.
+    direction: locale === "ar" ? "rtl" : "ltr",
+  })
+
+  const [selectedIndex, setSelectedIndex] = useState(0)
+  const [scrollSnaps, setScrollSnaps] = useState<number[]>([])
+  const [prevBtnDisabled, setPrevBtnDisabled] = useState(true)
+  const [nextBtnDisabled, setNextBtnDisabled] = useState(true)
 
   const bestSellers = getBestSellers().map((product) =>
     getTranslatedProduct(product, translations)
   )
 
-  // Accent the second word of the title, as the previous build did.
-  const titleWords = t("title").split(" ")
+  /* ---- State sync -------------------------------------------------------- */
 
-  /**
-   * One card per press. `scrollBy` takes a physical offset, so "next" is a
-   * leftward move in RTL — hence the sign flip rather than a logical property.
-   */
-  const scrollByCard = (direction: 1 | -1) => {
-    const rail = railRef.current
-    if (!rail) return
-    const card = rail.firstElementChild as HTMLElement | null
-    const step = card ? card.offsetWidth + 20 : rail.clientWidth * 0.8
-    rail.scrollBy({ left: step * direction * (isRTL ? -1 : 1), behavior: "smooth" })
-  }
+  useEffect(() => {
+    if (!emblaApi) return
 
-  /** Up to four spec entries per card, in the order a buyer reads them. */
+    /** Arrow-button states: one sync so scroll, select and reInit share it. */
+    const syncButtons = () => {
+      setPrevBtnDisabled(!emblaApi.canScrollPrev())
+      setNextBtnDisabled(!emblaApi.canScrollNext())
+    }
+    const syncSelection = () => {
+      setScrollSnaps(emblaApi.scrollSnapList())
+      setSelectedIndex(emblaApi.selectedScrollSnap())
+      syncButtons()
+    }
+
+    syncSelection()
+
+    // Embla's `.on()` returns the api (not an unsubscriber), so cleanup must
+    // call `.off()` with the SAME function references. The React hook owns
+    // the instance's lifecycle — never destroy() it manually here.
+    emblaApi
+      .on("select", syncButtons)
+      .on("scroll", syncButtons)
+      .on("reInit", syncSelection)
+
+    return () => {
+      emblaApi
+        .off("select", syncButtons)
+        .off("scroll", syncButtons)
+        .off("reInit", syncSelection)
+    }
+  }, [emblaApi])
+
+  const onPrevButtonClick = useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
+  const onNextButtonClick = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
+  const onDotButtonClick = useCallback(
+    (index: number) => emblaApi?.scrollTo(index),
+    [emblaApi]
+  )
+
+  /* ---- Spec table -------------------------------------------------------- */
+
+  /** Up to three spec entries per card, in the order a buyer reads them.
+   *  Packaging/conditioning stays on the detail page only. */
   const specsFor = (product: TranslatedProduct) =>
     [
       product.origin && { label: tUi("origin"), value: product.origin },
       product.type && { label: tUi("type"), value: product.type },
       product.caliber && { label: tUi("caliber"), value: product.caliber },
-      product.formats?.[0] && { label: tUi("packaging"), value: product.formats[0] },
     ].filter((spec): spec is { label: string; value: string } => Boolean(spec))
 
+  // Emphasise the second word of the title. Weight of the same family, not a
+  // second colour: colour is no longer an emphasis mechanism anywhere on the site.
+  const titleWords = t("title").split(" ")
+
   return (
-    <SectionShell tone="shell" contained={false}>
-      {/* `lg:pe-0` drops the container's end gutter so the rail runs off the
-          viewport edge, while the sticky column keeps its start gutter. */}
-      <div className="container-tafc lg:pe-0">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-14">
-          {/* ---- Sticky header -------------------------------------------- */}
-          <div className="lg:col-span-4">
-            <div className="lg:sticky lg:top-28">
-              <SectionIntro
-                eyebrow={t("badge")}
-                title={
-                  <>
-                    {titleWords.map((word, i) => (
-                      <span
-                        key={`${word}-${i}`}
-                        className={i === 1 ? "text-tafc-accent" : undefined}
-                      >
-                        {word}
-                        {i < titleWords.length - 1 ? " " : ""}
-                      </span>
-                    ))}
-                  </>
-                }
-                deck={t("description")}
-              />
+    <SectionShell tone="salt" contained={false}>
+      {/* ---- Header: eyebrow → title → deck on top, full width. The scroll
+             controls sit at the header's end, bottom-aligned to the intro on
+             desktop and stacked beneath it on mobile. Fully contained (both
+             gutters) so the type never runs to the viewport edge. ---------- */}
+      <div className="container-tafc">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between lg:gap-16">
+          <SectionIntro
+            eyebrow={t("badge")}
+            title={
+              <>
+                {titleWords.map((word, i) => (
+                  <span
+                    key={`${word}-${i}`}
+                    className={i === 1 ? "font-medium" : undefined}
+                  >
+                    {word}
+                    {i < titleWords.length - 1 ? " " : ""}
+                  </span>
+                ))}
+              </>
+            }
+            deck={t("description")}
+            className="max-w-2xl"
+          />
 
-              {/* Contents list for the rail — the copy the old hero carried on
-                  its floating cards. */}
-              <Reveal delay={0.1} className="mt-10">
-                <DataLabel>{tHero("featuredSelection")}</DataLabel>
-                <ul className="mt-4 border-t border-tafc-ink/[0.12]">
-                  {FEATURED_KEYS.map((key) => (
-                    <li
-                      key={key}
-                      className="flex items-start justify-between gap-4 border-b border-tafc-ink/[0.12] py-3.5"
-                    >
-                      <span className="min-w-0">
-                        <span className="block font-display text-[0.9375rem] font-semibold text-tafc-ink">
-                          {tHero(`products.${key}.name`)}
-                        </span>
-                        <span className="mt-0.5 block text-meta text-tafc-ink/45">
-                          {tHero(`products.${key}.subtitle`)}
-                        </span>
-                      </span>
-                      <span className="shrink-0 text-data text-tafc-ink/45 uppercase">
-                        {tHero(`products.${key}.badge`)}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </Reveal>
+          {/* Arrows + one dot per snap point. Squares and hairlines, like
+              every other control on the site. */}
+          <div className="flex shrink-0 items-center gap-4 lg:pb-2">
+            <button
+              type="button"
+              onClick={onPrevButtonClick}
+              disabled={prevBtnDisabled}
+              aria-label={t("previousSlide")}
+              className="inline-flex size-11 items-center justify-center rounded-sm border border-tafc-ink/15 bg-tafc-paper text-tafc-ink transition-colors hover:border-tafc-accent hover:text-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/30 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-35"
+            >
+              <CaretLeft aria-hidden="true" className="size-5 rtl:rotate-180" />
+            </button>
+            <button
+              type="button"
+              onClick={onNextButtonClick}
+              disabled={nextBtnDisabled}
+              aria-label={t("nextSlide")}
+              className="inline-flex size-11 items-center justify-center rounded-sm border border-tafc-ink/15 bg-tafc-paper text-tafc-ink transition-colors hover:border-tafc-accent hover:text-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/30 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-35"
+            >
+              <CaretRight aria-hidden="true" className="size-5 rtl:rotate-180" />
+            </button>
 
-              {/* Rail controls. Scrolling works without them — these are the
-                  affordance, not the only route. */}
-              <div className="mt-8 flex items-center gap-3">
+            <div className="ms-2 flex items-center gap-2" aria-label={t("badge")}>
+              {scrollSnaps.map((_, index) => (
                 <button
+                  key={index}
                   type="button"
-                  onClick={() => scrollByCard(-1)}
-                  aria-label={t("previousSlide")}
-                  className="inline-flex size-11 items-center justify-center rounded-full border border-tafc-ink/[0.12] bg-white text-tafc-ink transition hover:border-tafc-accent hover:text-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/40 focus-visible:outline-none"
-                >
-                  <ChevronLeft aria-hidden="true" className="size-5 rtl:rotate-180" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollByCard(1)}
-                  aria-label={t("nextSlide")}
-                  className="inline-flex size-11 items-center justify-center rounded-full border border-tafc-ink/[0.12] bg-white text-tafc-ink transition hover:border-tafc-accent hover:text-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/40 focus-visible:outline-none"
-                >
-                  <ChevronRight aria-hidden="true" className="size-5 rtl:rotate-180" />
-                </button>
-              </div>
+                  aria-current={index === selectedIndex ? "true" : undefined}
+                  aria-label={`${index + 1} / ${scrollSnaps.length}`}
+                  onClick={() => onDotButtonClick(index)}
+                  className={cn(
+                    "size-1.5 rounded-[1px] transition-colors duration-200",
+                    index === selectedIndex
+                      ? "w-5 bg-tafc-accent"
+                      : "bg-tafc-ink/25 hover:bg-tafc-ink/45"
+                  )}
+                />
+              ))}
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* ---- Rail ----------------------------------------------------- */}
-          <div className="lg:col-span-8">
-            <ul
-              ref={railRef}
-              className="rail scrollbar-hide -mx-6 gap-5 px-6 pb-2 scroll-ps-6 lg:mx-0 lg:ps-0 lg:scroll-ps-0"
-            >
-              {bestSellers.map((product) => (
-                <li key={product.id} className="w-[78vw] sm:w-[22rem]">
-                  <Link
-                    href={`/products/${product.slug}`}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl bg-tafc-ink ring-1 ring-tafc-ink/10 transition duration-500 hover:ring-tafc-accent/50 hover:shadow-[0_28px_64px_-34px_rgba(4,38,53,0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tafc-accent"
-                  >
-                    <div className="relative aspect-[4/5] shrink-0">
+      {/* ---- Carousel: full-bleed rail. Keeps the container's start gutter so
+             the first plate lines up with the header, `lg:pe-0` drops the end
+             gutter so the rail runs off the viewport edge. ----------------- */}
+      <div className="container-tafc mt-14 lg:mt-16 lg:pe-0">
+        <div
+          /* `touch-pan-y`: the horizontal drag belongs to the carousel,
+             the vertical to the page, so a diagonal thumb-scroll doesn't
+             trap the reader. `select-none` stops drag-selection flashes. */
+          className="embla-viewport touch-pan-y select-none overflow-hidden"
+          ref={emblaRef}
+        >
+          <ul className="flex">
+            {bestSellers.map((product) => (
+              <li
+                key={product.id}
+                /* Basis percentages resolve against the full-width rail:
+                   ~1.2 plates on a phone (a peek of the next plate says
+                   "scroll" better than any arrow), ~2.4 from md, ~3.2 from
+                   lg where the rail spans the whole width. The gutter is
+                   logical (`ps`), so RTL mirrors correctly. */
+                className="min-w-0 shrink-0 grow-0 basis-[82%] ps-5 sm:basis-[60%] md:basis-[42%] lg:basis-[31%] xl:basis-[27%]"
+              >
+                <Link
+                  href={`/products/${product.slug}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-sm border border-tafc-ink/12 bg-tafc-paper transition-colors duration-300 hover:border-tafc-ink/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tafc-accent"
+                >
+                  {/* Inner padding stops the photo from touching the card's
+                      own border; `overflow-hidden` clips the hover zoom. */}
+                  <div className="p-4 pb-0">
+                    <div className="relative aspect-square overflow-hidden rounded-sm">
                       <Image
                         src={product.image || "/placeholder.svg"}
                         alt={product.name}
                         fill
-                        sizes="(max-width: 640px) 78vw, 22rem"
-                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                        sizes="(max-width: 640px) 82vw, (max-width: 768px) 60vw, (max-width: 1024px) 42vw, (max-width: 1280px) 31vw, 27vw"
+                        className="photo-grade object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
                       />
-                      <div
-                        aria-hidden="true"
-                        className="absolute inset-0 bg-gradient-to-t from-tafc-ink/70 via-transparent to-transparent"
-                      />
-                      <span className="absolute start-4 top-4 rounded-full bg-tafc-accent px-2.5 py-1 text-data text-tafc-ink uppercase">
-                        {t("badge")}
-                      </span>
                     </div>
+                  </div>
 
-                    <div className="flex flex-1 flex-col p-6">
-                      {product.latinName && (
-                        <p className="mb-1.5 text-meta text-white/40 italic">
-                          {product.latinName}
-                        </p>
-                      )}
-                      <h3 className="font-display text-h3 text-white transition-colors duration-300 group-hover:text-tafc-accent">
-                        {product.name}
-                      </h3>
+                  <div className="flex flex-1 flex-col p-5">
+                    <span className="mb-3 text-data text-tafc-accent uppercase">
+                      {t("badge")}
+                    </span>
+                    <h3 className="font-display text-h3 text-tafc-ink">
+                      {product.name}
+                    </h3>
 
-                      {/* Spec table. The catalogue voice, in the mono face. */}
-                      <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3.5 border-t border-tafc-ink-line pt-5">
-                        {specsFor(product).map((spec) => (
-                          <div key={spec.label} className="min-w-0">
-                            <dt>
-                              <DataLabel tone="ink">{spec.label}</DataLabel>
-                            </dt>
-                            <dd className="mt-1 truncate text-meta font-medium text-white/85">
-                              {spec.value}
-                            </dd>
-                          </div>
-                        ))}
-                      </dl>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+                    <dl className="mt-auto grid grid-cols-2 gap-x-4 gap-y-3.5 border-t border-tafc-ink/12 pt-4">
+                      {specsFor(product).map((spec) => (
+                        <div key={spec.label} className="min-w-0">
+                          <dt>
+                            <DataLabel>{spec.label}</DataLabel>
+                          </dt>
+                          <dd className="mt-1 truncate text-meta font-medium text-tafc-ink/75">
+                            {spec.value}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </SectionShell>

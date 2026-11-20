@@ -4,8 +4,8 @@
   "description": "Fournisseur B2B premium de produits de la mer - Exportateur certifié depuis la Tunisie et l'Algérie",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#042635",
-  "theme_color": "#042635",
+  "background_color": "#0a0f29",
+  "theme_color": "#0a0f29",
   "icons": [
     {
       "src": "/logo.png",

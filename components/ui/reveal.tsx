@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef } from "react"
-import { motion, useInView, useReducedMotion } from "framer-motion"
+import { motion, useInView, useReducedMotion } from "motion/react"
 import { cn } from "@/lib/utils"
 
 const TAGS = {
@@ -62,9 +62,9 @@ export function Reveal({
         <Tag
             ref={ref}
             className={cn(className)}
-            initial={{ opacity: 0, y, x }}
-            animate={inView ? { opacity: 1, y: 0, x: 0 } : undefined}
-            transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, transform: `translate(${x}px, ${y}px)` }}
+            animate={inView ? { opacity: 1, transform: "translate(0px, 0px)" } : undefined}
+            transition={{ duration, delay, ease: [0.23, 1, 0.32, 1] }}
         >
             {children}
         </Tag>

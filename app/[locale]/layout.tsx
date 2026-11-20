@@ -1,6 +1,6 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter, Sora } from "next/font/google"
+import { Schibsted_Grotesk, IBM_Plex_Sans_Arabic } from "next/font/google"
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
@@ -8,34 +8,36 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/toaster"
 import { routing, localeMetadata, type Locale } from "@/i18n/routing"
 import { cn } from "@/lib/utils"
-import { LoadingProvider } from "@/components/ui/loading-provider"
 import "../globals.css"
 
-// Two families, both with `display: swap`.
-//   Sora  = display — headings, stats, index numerals
-//   Inter = everything else, including the spec/data layer
-// JetBrains Mono was a third download carrying the spec voice (origins,
-// calibers, pack formats). That voice is now uppercase + 0.1em tracking +
-// tabular figures on Inter, which reads the same and costs one fewer font.
-// Manrope was loaded here too, referenced only via a `font-manrope` class that
-// globals.css never registered — it downloaded on every page and rendered
-// nothing.
-const sora = Sora({
-    subsets: ["latin"],
-    weight: ["400", "500", "600", "700", "800"],
-    variable: "--font-sora",
+// One Latin family, one Arabic family, both with `display: swap`.
+//
+// Schibsted Grotesk carries everything Latin — display AND body. It replaced
+// Sora + Inter, which were two downloads doing one job; the premium read comes
+// from setting the display steps at weight 400 with tight tracking, not from a
+// second face. `latin-ext` is required for the French copy.
+//
+// IBM Plex Sans Arabic is new. Arabic previously had no face loaded at all and
+// fell back to whatever the system provided, which is why /ar looked unrelated
+// to /fr. Three weights cover body, medium emphasis and the data layer.
+const schibsted = Schibsted_Grotesk({
+    subsets: ["latin", "latin-ext"],
+    variable: "--font-schibsted",
     display: "swap",
 })
 
-const inter = Inter({
-    subsets: ["latin"],
-    variable: "--font-inter",
+const plexArabic = IBM_Plex_Sans_Arabic({
+    subsets: ["arabic", "latin"],
+    weight: ["400", "500", "600"],
+    variable: "--font-plex-arabic",
     display: "swap",
 })
 
 // Viewport configuration for mobile optimization
 export const viewport: Viewport = {
-    themeColor: "#042635",
+    // Salt, matching the page ground — the browser chrome on mobile now blends
+    // into the top of the page instead of banding navy above a light hero.
+    themeColor: "#f7f8f8",
     width: "device-width",
     initialScale: 1,
     maximumScale: 5,
@@ -128,9 +130,9 @@ export async function generateMetadata({
         },
         manifest: "/manifest.json",
         alternates: {
-            canonical: baseUrl,
+            canonical: locale === 'fr' ? baseUrl : `${baseUrl}/${locale}`,
             languages: {
-                'fr': `${baseUrl}/fr`,
+                'fr': baseUrl,
                 'en': `${baseUrl}/en`,
                 'ar': `${baseUrl}/ar`,
             },
@@ -162,7 +164,18 @@ export default async function LocaleLayout({
     const direction = localeMetadata[locale as Locale]?.direction || 'ltr'
 
     return (
-        <html lang={locale} dir={direction} className="scroll-smooth" suppressHydrationWarning>
+        <html
+            lang={locale}
+            dir={direction}
+            className="scroll-smooth"
+            // Next needs this to know the smooth scroll is intentional; without
+            // it, it warns and force-disables smooth scrolling during route
+            // transitions. Declaring it keeps in-page anchor jumps smooth while
+            // letting route changes land instantly at the top, which is what you
+            // want in both cases.
+            data-scroll-behavior="smooth"
+            suppressHydrationWarning
+        >
             <head>
                 {/* Preconnect to external resources for faster loading */}
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -170,17 +183,25 @@ export default async function LocaleLayout({
             </head>
             <body
                 className={cn(
-                    inter.variable,
-                    sora.variable,
-                    "font-sans antialiased min-h-screen bg-white text-tafc-ink",
-                    "selection:bg-tafc-accent selection:text-tafc-ink"
+                    schibsted.variable,
+                    plexArabic.variable,
+                    "font-sans antialiased min-h-screen bg-tafc-salt text-tafc-ink",
+                    "selection:bg-tafc-ink selection:text-white"
                 )}
             >
+                {/* Skip link — first tab stop, visible on focus only. */}
+                <a
+                    href="#main-content"
+                    className="sr-only z-[100] bg-tafc-ink px-6 py-3 text-sm font-medium text-white focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:flex focus:items-center focus:outline-2 focus:outline-offset-2 focus:outline-tafc-accent"
+                >
+                    Skip to content
+                </a>
                 <NextIntlClientProvider messages={messages}>
-                    <LoadingProvider>
-                        {children}
-                    </LoadingProvider>
+                    {children}
                 </NextIntlClientProvider>
+                {/* Film grain over the whole viewport. Fixed + pointer-events-none
+                    so it composites once and never intercepts a click. */}
+                <div aria-hidden="true" className="grain-overlay" />
                 <Toaster />
                 <Analytics />
             </body>

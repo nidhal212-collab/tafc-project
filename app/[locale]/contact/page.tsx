@@ -1,10 +1,14 @@
 "use client"
 
-import { motion } from "framer-motion"
-import { Mail, Phone, MessageSquare, Globe, ArrowRight, Instagram, Facebook, Loader2 } from "lucide-react"
+import {
+    ArrowRight,
+    CircleNotch,
+    InstagramLogo,
+    FacebookLogo,
+} from "@phosphor-icons/react"
 import { useTranslations } from "next-intl"
 import { useState, FormEvent } from "react"
-import { toast } from "sonner"
+import { toast } from "@/hooks/use-toast"
 
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
@@ -16,11 +20,50 @@ import { Reveal } from "@/components/ui/reveal"
 import { Eyebrow } from "@/components/ui/section-intro"
 import { cn } from "@/lib/utils"
 
-/** One field recipe: eyebrow label, 3rem control, teal focus ring. */
+/** One field recipe: eyebrow label, 3rem control, square, accent focus ring.
+ *  Labels sit at /65 — 5.05:1 on salt, AA-safe; /50 measured 3.7:1.
+ *  Invalid fields take `--tafc-invalid`, which exists only for this. It is not an
+ *  accent and appears nowhere else on the site. */
 const FIELD =
-    "h-12 rounded-xl border-tafc-ink/12 bg-tafc-shell/60 text-tafc-ink focus-visible:border-tafc-accent/50 focus-visible:ring-3 focus-visible:ring-tafc-accent/20"
-const LABEL = "text-eyebrow text-tafc-ink/50 uppercase"
+    "h-12 rounded-sm border-tafc-ink/15 bg-tafc-salt text-tafc-ink placeholder:text-tafc-ink/60 focus-visible:border-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/20 aria-[invalid=true]:border-tafc-invalid/70 aria-[invalid=true]:focus-visible:ring-tafc-invalid/20"
+const LABEL = "text-eyebrow text-tafc-ink/65 uppercase"
+const ERROR_TEXT = "mt-2 text-start text-meta text-tafc-invalid"
 
+/** Field order for submit-time focus: first invalid receives focus. */
+const FIELD_ORDER = ["name", "email", "message"] as const
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/**
+ * The three direct channels.
+ *
+ * WhatsApp green does **not** appear here. `#25D366` measures 1.99:1 on a light
+ * ground, so as a text or glyph colour it fails AA and the 3:1 non-text
+ * threshold both. The green survives where it is a fill with ink on top — the
+ * product-detail CTAs and the footer square — and the label already reads
+ * "WhatsApp" without it.
+ */
+const CHANNELS = [
+    { key: "whatsapp", href: "https://wa.me/21698621128", external: true, value: null },
+    { key: "phone", href: "tel:+21698621128", external: false, value: "+216 98 621 128" },
+    { key: "email", href: "mailto:sales@tafc.tn", external: false, value: "sales@tafc.tn" },
+] as const
+
+/**
+ * Contact page.
+ *
+ * The form's wiring is untouched on purpose: field `id`s, the `formData` keys,
+ * blur-then-live validation and focus-first-invalid all stay exactly as they
+ * were, because `app/api/contact/route.ts` and its zod schema key off them.
+ *
+ * What changed is everything around it. The three channels were floating cards
+ * with a coloured icon tile each and a 56px drop shadow on hover — three
+ * different accent fills on one row. They are now three ruled columns of the
+ * site's specification grid, which is the same device as the product cards and
+ * the footer contact list. The navy location panel keeps its surface but loses
+ * the circular globe medallion and the centring. Fields go square on salt inside
+ * a paper panel, and the submit button is the one solid ink rectangle on the
+ * page.
+ */
 export default function ContactPage() {
     const t = useTranslations('contactPage')
 
@@ -32,9 +75,49 @@ export default function ContactPage() {
         message: ""
     })
     const [isLoading, setIsLoading] = useState(false)
+    /** Touched fields: validation fires on blur, then stays live. */
+    const [touched, setTouched] = useState<Record<string, boolean>>({})
+
+    /** Error for one field, or null. Mirrors the server's zod rules. */
+    const errorFor = (field: keyof typeof formData): string | null => {
+        if (!touched[field]) return null
+        if (field === "name" && !formData.name.trim()) return t('form.errors.nameRequired')
+        if (field === "email") {
+            if (!formData.email.trim()) return t('form.errors.emailRequired')
+            if (!EMAIL_RE.test(formData.email)) return t('form.errors.emailInvalid')
+        }
+        if (field === "message" && !formData.message.trim()) return t('form.errors.messageRequired')
+        return null
+    }
+
+    const formIsValid = () =>
+        Boolean(formData.name.trim()) &&
+        Boolean(formData.email.trim()) &&
+        EMAIL_RE.test(formData.email) &&
+        Boolean(formData.message.trim())
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setTouched(prev => ({ ...prev, [e.target.id]: true }))
+    }
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+
+        // Validate everything, mark all, and focus the first invalid field —
+        // the user lands exactly where the fix is needed.
+        setTouched({ name: true, email: true, message: true })
+        if (!formIsValid()) {
+            const firstInvalid = FIELD_ORDER.find(f => errorFor(f) !== null || (
+                f === "name" ? !formData.name.trim() :
+                f === "email" ? (!formData.email.trim() || !EMAIL_RE.test(formData.email)) :
+                !formData.message.trim()
+            ))
+            if (firstInvalid) {
+                document.getElementById(firstInvalid)?.focus()
+            }
+            return
+        }
+
         setIsLoading(true)
 
         try {
@@ -49,7 +132,7 @@ export default function ContactPage() {
             const data = await response.json()
 
             if (data.success) {
-                toast.success(t('form.success') || "Message sent successfully!")
+                toast({ title: t('form.success') })
                 setFormData({
                     name: "",
                     company: "",
@@ -57,11 +140,12 @@ export default function ContactPage() {
                     phone: "",
                     message: ""
                 })
+                setTouched({})
             } else {
-                toast.error(data.error || t('form.error') || "Failed to send message")
+                toast({ title: data.error || t('form.error'), variant: "destructive" })
             }
         } catch {
-            toast.error(t('form.error') || "An error occurred. Please try again.")
+            toast({ title: t('form.error'), variant: "destructive" })
         } finally {
             setIsLoading(false)
         }
@@ -75,105 +159,89 @@ export default function ContactPage() {
         }))
     }
 
+    /** Field block: label above, control, error below (when touched). */
+    const fieldError = (id: string) => {
+        const err = errorFor(id as keyof typeof formData)
+        if (!err) return null
+        return <p className={ERROR_TEXT} role="alert">{err}</p>
+    }
+
     return (
         <>
             <Header />
-            <main className="min-h-screen bg-white">
+            <main id="main-content" className="min-h-screen bg-tafc-salt">
 
                 {/* ---- Hero band --------------------------------------------- */}
-                <section className="relative isolate overflow-hidden bg-tafc-ink pt-32 pb-16 md:pt-40 md:pb-20">
+                {/* Was a navy block. A page that is mostly a white form does not
+                    need a dark lid on it; a hairline is enough of a seam. */}
+                <section className="border-b border-tafc-ink/12 bg-tafc-salt pt-28 pb-14 md:pt-32 md:pb-18">
                     <div className="container-tafc">
-                        <motion.div
-                            initial={{ opacity: 0, y: 24 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
-                            className="max-w-3xl"
-                        >
-                            <h1 className="font-display text-h1 text-balance text-white">
+                        <Reveal y={20} className="max-w-3xl">
+                            <h1 className="font-display text-h1 text-balance text-tafc-ink">
                                 {t('hero.title')}
                             </h1>
-                            <p className="mt-6 max-w-xl text-deck text-pretty text-white/60">
+                            <p className="mt-6 max-w-xl text-deck text-pretty text-tafc-ink/65">
                                 {t('hero.subtitle')}
                             </p>
-                        </motion.div>
+                        </Reveal>
                     </div>
                 </section>
 
                 <div className="container-tafc section-y-tight">
 
-                    {/* ---- Direct contact methods ---------------------------- */}
-                    {/* Flattened: the cards no longer float on a `-mt-12` overlap, and
-                        the oversized watermark icons behind each one are gone. */}
-                    <div className="grid gap-5 md:grid-cols-3">
-                        <Reveal>
-                            <a
-                                href="https://wa.me/21698621128"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group flex h-full flex-col rounded-2xl border border-tafc-ink/10 bg-white p-7 transition-[border-color,box-shadow] duration-400 hover:border-[#25D366]/60 hover:shadow-[0_24px_56px_-34px_rgba(4,38,53,0.4)]"
-                            >
-                                <span className="mb-6 flex size-12 items-center justify-center rounded-xl bg-[#25D366]/12 text-[#25D366] transition-colors duration-300 group-hover:bg-[#25D366] group-hover:text-white">
-                                    <MessageSquare aria-hidden="true" className="size-5" />
-                                </span>
-                                <h2 className="font-display text-h3 text-tafc-ink">{t('cards.whatsapp.title')}</h2>
-                                <p className="mt-2 text-meta text-tafc-ink/55">{t('cards.whatsapp.subtitle')}</p>
-                                <span className="mt-auto inline-flex items-center gap-1.5 pt-6 font-medium text-[#25D366]">
-                                    {t('cards.whatsapp.cta')}
-                                    <ArrowRight aria-hidden="true" className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
-                                </span>
-                            </a>
-                        </Reveal>
+                    {/* ---- Direct channels ----------------------------------- */}
+                    <Reveal y={16}>
+                        <div className="grid border-y border-tafc-ink/12 md:grid-cols-3">
+                            {CHANNELS.map((channel, i) => (
+                                <a
+                                    key={channel.key}
+                                    href={channel.href}
+                                    target={channel.external ? "_blank" : undefined}
+                                    rel={channel.external ? "noopener noreferrer" : undefined}
+                                    className={cn(
+                                        "group flex flex-col border-b border-tafc-ink/12 py-8 last:border-b-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tafc-accent md:border-b-0",
+                                        i > 0 && "md:border-s md:border-tafc-ink/12 md:ps-10",
+                                    )}
+                                >
+                                    <h2 className="text-data text-tafc-ink/60 uppercase">
+                                        {t(`cards.${channel.key}.title`)}
+                                    </h2>
+                                    <p className="mt-2 text-meta text-tafc-ink/65">
+                                        {t(`cards.${channel.key}.subtitle`)}
+                                    </p>
 
-                        <Reveal delay={0.08}>
-                            <a
-                                href="tel:+21698621128"
-                                className="group flex h-full flex-col rounded-2xl border border-tafc-ink/10 bg-white p-7 transition-[border-color,box-shadow] duration-400 hover:border-tafc-accent/50 hover:shadow-[0_24px_56px_-34px_rgba(4,38,53,0.4)]"
-                            >
-                                <span className="mb-6 flex size-12 items-center justify-center rounded-xl bg-tafc-ink/[0.06] text-tafc-ink transition-colors duration-300 group-hover:bg-tafc-ink group-hover:text-white">
-                                    <Phone aria-hidden="true" className="size-5" />
-                                </span>
-                                <h2 className="font-display text-h3 text-tafc-ink">{t('cards.phone.title')}</h2>
-                                <p className="mt-2 text-meta text-tafc-ink/55">{t('cards.phone.subtitle')}</p>
-                                <span className="mt-auto pt-6 font-display text-h3 text-tafc-ink transition-colors duration-300 group-hover:text-tafc-accent">
-                                    +216 98 621 128
-                                </span>
-                            </a>
-                        </Reveal>
-
-                        <Reveal delay={0.16}>
-                            <a
-                                href="mailto:sales@tafc.tn"
-                                className="group flex h-full flex-col rounded-2xl border border-tafc-ink/10 bg-white p-7 transition-[border-color,box-shadow] duration-400 hover:border-tafc-accent/50 hover:shadow-[0_24px_56px_-34px_rgba(4,38,53,0.4)]"
-                            >
-                                <span className="mb-6 flex size-12 items-center justify-center rounded-xl bg-tafc-accent/12 text-tafc-accent transition-colors duration-300 group-hover:bg-tafc-accent group-hover:text-tafc-ink">
-                                    <Mail aria-hidden="true" className="size-5" />
-                                </span>
-                                <h2 className="font-display text-h3 text-tafc-ink">{t('cards.email.title')}</h2>
-                                <p className="mt-2 text-meta text-tafc-ink/55">{t('cards.email.subtitle')}</p>
-                                <span className="mt-auto pt-6 font-display text-h3 text-tafc-ink transition-colors duration-300 group-hover:text-tafc-accent">
-                                    sales@tafc.tn
-                                </span>
-                            </a>
-                        </Reveal>
-                    </div>
+                                    {channel.value ? (
+                                        <span className="mt-6 font-display text-h3 text-tafc-ink transition-colors duration-300 group-hover:text-tafc-accent">
+                                            {channel.value}
+                                        </span>
+                                    ) : (
+                                        <span className="mt-6 inline-flex items-center gap-1.5 text-meta font-medium text-tafc-ink transition-colors duration-300 group-hover:text-tafc-accent">
+                                            {t('cards.whatsapp.cta')}
+                                            <ArrowRight
+                                                aria-hidden="true"
+                                                className="size-3.5 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
+                                            />
+                                        </span>
+                                    )}
+                                </a>
+                            ))}
+                        </div>
+                    </Reveal>
 
                     {/* ---- Context + form ------------------------------------ */}
                     <div className="mt-16 grid items-start gap-8 lg:grid-cols-12">
 
                         {/* Left: location + socials */}
-                        <div className="space-y-5 lg:col-span-4">
+                        <div className="space-y-4 lg:col-span-4">
                             <Reveal x={-24} y={0}>
                                 {/* The Google Static Maps background here had no API key, so it
                                     resolved to an error tile. Replaced with a plain navy panel. */}
-                                <div className="rounded-2xl bg-tafc-ink p-8 text-center">
-                                    <span className="mx-auto mb-5 flex size-14 items-center justify-center rounded-full bg-white/[0.07] ring-1 ring-inset ring-white/10">
-                                        <Globe aria-hidden="true" className="size-6 text-tafc-accent" />
-                                    </span>
-                                    <h2 className="font-display text-h3 text-white">{t('cards.location.title')}</h2>
-                                    <p className="mt-2 text-eyebrow text-tafc-accent uppercase">
-                                        {t('cards.location.subtitle')}
-                                    </p>
-                                    <p className="mx-auto mt-4 max-w-xs text-meta leading-relaxed text-white/55">
+                                <div className="bg-tafc-ink p-8 md:p-10">
+                                    <Eyebrow tone="ink">{t('cards.location.subtitle')}</Eyebrow>
+                                    <h2 className="mt-6 font-display text-h3 text-white">
+                                        {t('cards.location.title')}
+                                    </h2>
+                                    <p className="mt-4 text-meta leading-relaxed text-white/65">
                                         {t('cards.location.desc')}
                                     </p>
                                 </div>
@@ -185,12 +253,13 @@ export default function ContactPage() {
                                         href="https://www.instagram.com/tafc.seafood/"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-tafc-ink/10 bg-white p-6 transition-colors hover:border-tafc-accent/50"
+                                        className="group inline-flex items-center gap-3 rounded-sm border border-tafc-ink/15 bg-tafc-paper px-5 py-4 transition-colors duration-300 hover:border-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/30 focus-visible:outline-none"
                                     >
-                                        <span className="flex size-10 items-center justify-center rounded-full bg-tafc-ink/[0.06] text-tafc-ink/70 transition-colors group-hover:bg-tafc-accent group-hover:text-tafc-ink">
-                                            <Instagram aria-hidden="true" className="size-4.5" />
-                                        </span>
-                                        <span className="text-meta font-medium text-tafc-ink/70">
+                                        <InstagramLogo
+                                            aria-hidden="true"
+                                            className="size-4.5 text-tafc-ink/70 transition-colors duration-300 group-hover:text-tafc-accent"
+                                        />
+                                        <span className="text-meta font-medium text-tafc-ink/75">
                                             {t('cards.socials.instagram')}
                                         </span>
                                     </a>
@@ -199,12 +268,13 @@ export default function ContactPage() {
                                         href="https://www.facebook.com/profile.php?id=61585917932963"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="group flex flex-col items-center justify-center gap-3 rounded-2xl border border-tafc-ink/10 bg-white p-6 transition-colors hover:border-tafc-accent/50"
+                                        className="group inline-flex items-center gap-3 rounded-sm border border-tafc-ink/15 bg-tafc-paper px-5 py-4 transition-colors duration-300 hover:border-tafc-accent focus-visible:ring-3 focus-visible:ring-tafc-accent/30 focus-visible:outline-none"
                                     >
-                                        <span className="flex size-10 items-center justify-center rounded-full bg-tafc-ink/[0.06] text-tafc-ink/70 transition-colors group-hover:bg-tafc-accent group-hover:text-tafc-ink">
-                                            <Facebook aria-hidden="true" className="size-4.5" />
-                                        </span>
-                                        <span className="text-meta font-medium text-tafc-ink/70">
+                                        <FacebookLogo
+                                            aria-hidden="true"
+                                            className="size-4.5 text-tafc-ink/70 transition-colors duration-300 group-hover:text-tafc-accent"
+                                        />
+                                        <span className="text-meta font-medium text-tafc-ink/75">
                                             {t('cards.socials.facebook')}
                                         </span>
                                     </a>
@@ -214,26 +284,28 @@ export default function ContactPage() {
 
                         {/* Right: quote form */}
                         <Reveal x={24} y={0} delay={0.12} className="lg:col-span-8">
-                            <div className="rounded-2xl border border-tafc-ink/10 bg-white p-7 lg:p-10">
-                                <div className="mb-8 border-b border-tafc-ink/[0.08] pb-6">
+                            <div className="rounded-sm border border-tafc-ink/12 bg-tafc-paper p-7 lg:p-10">
+                                <div className="mb-8 border-b border-tafc-ink/12 pb-6">
                                     <Eyebrow>{t('form.subtitle')}</Eyebrow>
-                                    <h2 className="mt-4 font-display text-h2 text-tafc-ink">{t('form.title')}</h2>
+                                    <h2 className="mt-6 font-display text-h2 text-tafc-ink">{t('form.title')}</h2>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-6">
+                                <form onSubmit={handleSubmit} noValidate className="space-y-6">
                                     <div className="grid gap-6 md:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="name" className={LABEL}>{t('form.name')}</Label>
+                                        <div>
+                                            <Label htmlFor="name" className={cn(LABEL, "mb-2 block")}>{t('form.name')}</Label>
                                             <Input
                                                 id="name"
                                                 value={formData.name}
                                                 onChange={handleChange}
-                                                required
+                                                onBlur={handleBlur}
+                                                aria-invalid={errorFor("name") !== null}
                                                 className={FIELD}
                                             />
+                                            {fieldError("name")}
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="company" className={LABEL}>{t('form.company')}</Label>
+                                        <div>
+                                            <Label htmlFor="company" className={cn(LABEL, "mb-2 block")}>{t('form.company')}</Label>
                                             <Input
                                                 id="company"
                                                 value={formData.company}
@@ -244,19 +316,21 @@ export default function ContactPage() {
                                     </div>
 
                                     <div className="grid gap-6 md:grid-cols-2">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="email" className={LABEL}>{t('form.email')}</Label>
+                                        <div>
+                                            <Label htmlFor="email" className={cn(LABEL, "mb-2 block")}>{t('form.email')}</Label>
                                             <Input
                                                 id="email"
                                                 type="email"
                                                 value={formData.email}
                                                 onChange={handleChange}
-                                                required
+                                                onBlur={handleBlur}
+                                                aria-invalid={errorFor("email") !== null}
                                                 className={FIELD}
                                             />
+                                            {fieldError("email")}
                                         </div>
-                                        <div className="space-y-2">
-                                            <Label htmlFor="phone" className={LABEL}>{t('form.phone')}</Label>
+                                        <div>
+                                            <Label htmlFor="phone" className={cn(LABEL, "mb-2 block")}>{t('form.phone')}</Label>
                                             <Input
                                                 id="phone"
                                                 type="tel"
@@ -267,28 +341,30 @@ export default function ContactPage() {
                                         </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                        <Label htmlFor="message" className={LABEL}>{t('form.message')}</Label>
+                                    <div>
+                                        <Label htmlFor="message" className={cn(LABEL, "mb-2 block")}>{t('form.message')}</Label>
                                         <Textarea
                                             id="message"
                                             value={formData.message}
                                             onChange={handleChange}
-                                            required
+                                            onBlur={handleBlur}
+                                            aria-invalid={errorFor("message") !== null}
                                             className={cn(FIELD, "h-auto min-h-36 resize-none py-3.5")}
                                         />
+                                        {fieldError("message")}
                                     </div>
 
                                     <div className="flex justify-end pt-2">
                                         <Button
                                             type="submit"
                                             size="xl"
-                                            variant="action"
+                                            variant="ink"
                                             disabled={isLoading}
                                             className="w-full sm:w-auto"
                                         >
                                             {isLoading ? (
                                                 <>
-                                                    <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+                                                    <CircleNotch aria-hidden="true" className="size-4 animate-spin" />
                                                     {t('form.sending') || "Sending..."}
                                                 </>
                                             ) : (

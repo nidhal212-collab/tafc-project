@@ -5,23 +5,37 @@
 
 :root {
   /* ==========================================================================
-     TAFC DESIGN SYSTEM — four colours, one job each.
-     Everything on the site resolves to these. Do not introduce new hues.
-       ink    #042635  deep ocean blue — dark surfaces, footer, badges
-       white  #ffffff  + shell #f5f8fa — light content surfaces
-       accent #22c5c5  teal — eyebrows, rules, icons, hover, focus rings
-       action #ff6b4a  coral — PRIMARY CTA BUTTONS ONLY
+     TAFC DESIGN SYSTEM — "Salt & Ink".
+
+     The page is light. Ink is architecture, not the default surface: it appears
+     twice on the homepage plus the footer, so a dark band still means something
+     when it arrives. There is one accent, and it is a precision marker — a
+     hairline, an index numeral, an active state, a focus ring — never a fill and
+     never a headline colour.
+
+       ink     #0a0f29  deep indigo navy — the two dark bands, footer, CTA fills
+       salt    #f7f8f8  the page ground. cool off-white, not beige, not paper
+       paper   #ffffff  raised light surface — cards, panes, form fields
+       accent  #0a7373  deep marine. 5.32:1 on salt, so it passes AA for body
+       accent-bright #22c5c5  the logo cyan. INK SURFACES ONLY (8.9:1 on ink);
+                              it measures 1.9:1 on salt and must never sit there
+       invalid #b4291a  form errors only. 6.46:1 on paper. NOT an accent
+
+     Coral (#d33922) is gone. The primary CTA is now a solid ink rectangle on
+     light and a solid white rectangle on ink — both 17.8:1 — which is what a
+     premium house actually ships and removes the second competing accent.
+
      (#25D366 and its hover shade #20BD5A are WhatsApp's own brand greens and are
       exempt, on WhatsApp CTAs only.)
      ========================================================================== */
-  --tafc-ink: #042635;
-  --tafc-ink-raised: #062f41;
-  --tafc-ink-line: #0a3d53;
-  --tafc-accent: #22c5c5;
-  --tafc-accent-soft: #4fd4d4;
-  --tafc-action: #ff6b4a;
-  --tafc-action-dark: #e45033;
-  --tafc-shell: #f5f8fa;
+  --tafc-ink: #0a0f29;
+  --tafc-ink-raised: #101a3d;
+  --tafc-ink-line: #17224e;
+  --tafc-salt: #f7f8f8;
+  --tafc-paper: #ffffff;
+  --tafc-accent: #0a7373;
+  --tafc-accent-bright: #22c5c5;
+  --tafc-invalid: #b4291a;
 
   /* Design tokens */
   --background: oklch(1 0 0);
@@ -43,89 +57,51 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  /* Card radius. The scale is 4 / 8 / 16 / full — see `@theme inline`. */
-  --radius: 1rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.145 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.145 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.269 0 0);
-  --input: oklch(0.269 0 0);
-  --ring: oklch(0.439 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.269 0 0);
-  --sidebar-ring: oklch(0.439 0 0);
+  /* One radius, 2px — see the RADII block in `@theme inline`. */
+  --radius: 0.125rem;
 }
 
 @theme inline {
   /* ==========================================================================
-     TYPE — two families, no more.
-       Sora  (`font-display`)  headings, display, stats, index numerals
-       Inter (`font-sans`)     everything else, INCLUDING the spec/data layer
-     JetBrains Mono was the third family and carried the spec voice. It is gone:
-     the data layer keeps its voice through `uppercase` + 0.1em tracking +
-     tabular figures, which Inter has properly. `font-serif` was also in use in
-     six places with no serif family ever registered, so it rendered as Times —
-     those are now `italic` on the sans face.
+     TYPE — one Latin family, plus one Arabic face.
+
+       Schibsted Grotesk (`font-display` and `font-sans`)  everything Latin
+       IBM Plex Sans Arabic (`font-arabic`)                the `ar` locale
+
+     Inter + Sora were two families doing one job, and Sora at weight 700 is
+     what made the display type read geometric/SaaS rather than premium. The
+     signature now comes from TREATMENT, not from a second family: display sets
+     at weight 400 with -0.035em tracking at a larger ceiling. One family at a
+     light weight and a big size is the whole move.
+
+     Arabic previously had no face loaded at all and fell back to whatever the
+     system had. Because `@theme inline` bakes these values at build time,
+     `--font-sans` cannot be re-pointed per locale from CSS — so Arabic is its
+     own registered token, applied by an explicit `html[lang="ar"]` base rule
+     further down plus the body class in `app/[locale]/layout.tsx`.
+
+     The data layer keeps its voice through `uppercase` + 0.1em tracking +
+     tabular figures, which Schibsted has properly.
      ========================================================================== */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-sora), var(--font-inter), ui-sans-serif, sans-serif;
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-arabic: var(--font-plex-arabic), var(--font-schibsted), system-ui, sans-serif;
 
   /* ---- Fluid type scale -------------------------------------------------
-     One scale for the whole site: 1.25 (major third) off a 16px base, so every
-     step is a real ratio rather than a hand-picked pixel value —
-       0.8 · 1 · 1.25 · 1.5625 · 1.953 · 2.441 · 3.052 · 3.815 · 4.768rem
-     Each fluid step interpolates between two ADJACENT scale members, hitting
-     its floor at a 360px viewport and its ceiling at 1440px. clamp() means no
-     `text-2xl md:text-4xl lg:text-6xl` chains anywhere in the app.
+     Each fluid step hits its floor at a 360px viewport and its ceiling at
+     1440px. clamp() means no `text-2xl md:text-4xl lg:text-6xl` chains.
 
-     Heading line-heights sit in the 1.1–1.2 band. `--text-display` was 0.95 and
-     `--text-h1` 1.05 — both tighter than a heading should ever set, and the
-     descenders were touching the line below on the two-line hero. */
+     Display weights are 400, not 700. Tracking tightens as size grows, which
+     is how optical sizing works: -0.035em at 5.25rem reads correct, the same
+     value at 1rem would look broken. Heading line-heights sit in the 1.02–1.25
+     band — tight, but every step has descender clearance measured against the
+     two-line hero. */
 
   /* Small steps — one size, 0.8rem (12.8px), four different jobs. */
   --text-eyebrow: 0.8rem;
   --text-eyebrow--line-height: 1;
-  --text-eyebrow--letter-spacing: 0.16em;
-  --text-eyebrow--font-weight: 600;
+  --text-eyebrow--letter-spacing: 0.12em;
+  --text-eyebrow--font-weight: 500;
 
   --text-data: 0.8rem;
   --text-data--line-height: 1.4;
@@ -148,63 +124,81 @@
   --text-deck--line-height: 1.6;
 
   /* Heading steps. */
-  --text-h3: clamp(1.25rem, 1.1458rem + 0.463vw, 1.5625rem);
-  --text-h3--line-height: 1.2;
-  --text-h3--letter-spacing: -0.01em;
-  --text-h3--font-weight: 600;
+  --text-h3: clamp(1.1875rem, 1.1rem + 0.4vw, 1.5rem);
+  --text-h3--line-height: 1.25;
+  --text-h3--letter-spacing: -0.015em;
+  --text-h3--font-weight: 500;
 
-  --text-h2: clamp(1.9531rem, 1.5869rem + 1.6277vw, 3.0518rem);
-  --text-h2--line-height: 1.15;
-  --text-h2--letter-spacing: -0.02em;
-  --text-h2--font-weight: 700;
+  --text-h2: clamp(1.75rem, 1.4rem + 1.55vw, 2.75rem);
+  --text-h2--line-height: 1.12;
+  --text-h2--letter-spacing: -0.025em;
+  --text-h2--font-weight: 400;
 
-  --text-h1: clamp(2.4414rem, 1.9836rem + 2.0345vw, 3.8147rem);
-  --text-h1--line-height: 1.1;
-  --text-h1--letter-spacing: -0.025em;
-  --text-h1--font-weight: 700;
+  --text-h1: clamp(2.25rem, 1.7rem + 2.4vw, 3.75rem);
+  --text-h1--line-height: 1.06;
+  --text-h1--letter-spacing: -0.03em;
+  --text-h1--font-weight: 400;
 
-  --text-display: clamp(3.0518rem, 2.4796rem + 2.5432vw, 4.7684rem);
-  --text-display--line-height: 1.1;
-  --text-display--letter-spacing: -0.03em;
-  --text-display--font-weight: 700;
+  --text-display: clamp(2.75rem, 1.9rem + 3.8vw, 5.25rem);
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 400;
 
   /* Hard figures. Shares the `h2` step so a stat and a section title next to
      each other are the same optical size — they are peers, not a hierarchy. */
-  --text-stat: clamp(1.9531rem, 1.5869rem + 1.6277vw, 3.0518rem);
+  --text-stat: clamp(1.75rem, 1.4rem + 1.55vw, 2.75rem);
   --text-stat--line-height: 1.1;
-  --text-stat--letter-spacing: -0.02em;
-  --text-stat--font-weight: 600;
+  --text-stat--letter-spacing: -0.025em;
+  --text-stat--font-weight: 400;
 
   /* ==========================================================================
-     RADII — 4 / 8 / 16 / full. Four values, nothing between.
-     The vendored shadcn set references `xl`/`2xl`/`3xl`; those alias to 16px so
-     nothing in it breaks and no component can quietly reintroduce a fifth step.
+     RADII — one value: 2px.
+
+     THE RULE: every surface and every control is 2px. PHOTOGRAPHY IS 0px, so an
+     image reads as a plate rather than as a widget. `--radius-full` survives
+     only for things that are genuinely circular — the active dot in the mobile
+     nav — and never for buttons, chips, inputs or avatars.
+
+     The vendored shadcn set references `sm`/`md`/`lg`/`xl`/`2xl`/`3xl`; they all
+     alias to the same 2px so no component can quietly reintroduce a soft corner.
      ========================================================================== */
-  --radius-sm: 0.25rem; /* 4px  — chips, inputs, small badges */
-  --radius-md: 0.5rem; /*  8px  — buttons, thumbnails */
-  --radius-lg: 1rem; /*    16px — cards, panes, media */
-  --radius-xl: 1rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1rem;
+  --radius-sm: 0.125rem;
+  --radius-md: 0.125rem;
+  --radius-lg: 0.125rem;
+  --radius-xl: 0.125rem;
+  --radius-2xl: 0.125rem;
+  --radius-3xl: 0.125rem;
   --radius-full: 9999px;
 
   /* ==========================================================================
-     SHADOWS — exactly two. There were six arbitrary values doing this job.
-     Both are cast in ink rather than black, so a lifted card reads as sitting
-     on the navy palette instead of on a grey page.
+     SHADOW — exactly one, and it is for floating chrome only (the header when
+     the page has scrolled under it, the mobile CTA bar). Cards do not lift.
+     Separation on light comes from `border-tafc-ink/12` hairlines and space;
+     on ink from `border-white/10`. `--shadow-raise` is gone along with every
+     arbitrary `shadow-[0_26px_60px...]` in the tree.
      ========================================================================== */
-  --shadow-raise: 0 8px 24px -12px rgb(4 38 53 / 0.18);
-  --shadow-float: 0 20px 48px -24px rgb(4 38 53 / 0.28);
+  --shadow-float: 0 24px 48px -32px rgb(10 15 41 / 0.22);
+
+  /* ---- Motion ------------------------------------------------------------
+     Easing tokens — the sanctioned curves. Before these existed the same
+     cubic-bezier was hand-rolled in 8+ component files; this is that value,
+     named. `--ease-drawer` is the iOS-like drawer curve for panels.
+     Usage: entrances/exits use --ease-out; on-screen movement uses
+     --ease-in-out; constant motion (marquee) uses `linear`. Never `ease-in`
+     on UI — it delays the exact moment the user is watching. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 
   /* ---- TAFC design-system colours ---- */
   --color-tafc-ink: var(--tafc-ink);
   --color-tafc-ink-raised: var(--tafc-ink-raised);
   --color-tafc-ink-line: var(--tafc-ink-line);
+  --color-tafc-salt: var(--tafc-salt);
+  --color-tafc-paper: var(--tafc-paper);
   --color-tafc-accent: var(--tafc-accent);
-  --color-tafc-accent-soft: var(--tafc-accent-soft);
-  --color-tafc-action: var(--tafc-action);
-  --color-tafc-action-dark: var(--tafc-action-dark);
-  --color-tafc-shell: var(--tafc-shell);
+  --color-tafc-accent-bright: var(--tafc-accent-bright);
+  --color-tafc-invalid: var(--tafc-invalid);
 
   /* Standard tokens */
   --color-background: var(--background);
@@ -226,19 +220,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 }
 
 @layer base {
@@ -246,9 +227,21 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    /* Salt, not white: any unstyled gap between sections reads as the page
+       ground rather than as a bright seam. */
+    background-color: var(--tafc-salt);
+    @apply text-foreground;
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
+  }
+
+  /* Arabic face. `@theme inline` bakes `--font-sans` at build time, so the
+     swap cannot be done by re-declaring that variable under a selector — it
+     has to name the family directly. */
+  html[lang="ar"] .font-display,
+  html[lang="ar"] .font-sans,
+  html[lang="ar"] body {
+    font-family: var(--font-arabic);
   }
 }
 
@@ -256,24 +249,37 @@
 @layer utilities {
   /* ---- Section rhythm ---------------------------------------------------
      Vertical spacing and container width are decided once here instead of
-     being re-invented per section (they used to range py-16 → py-32).
-     56px on a phone, 128px at 1600px and above. */
+     being re-invented per section. 80px on a phone, 192px at 1600px and above:
+     more air than before, because air is what up-market looks like and the
+     density dial came down to 3.
+     The bottom is optically heavier than the top by one step of the clamp's
+     own scale: equal paddings read as slightly bottom-light to the eye, so
+     the block padding starts the block *after* it a touch lower. */
   .section-y {
-    padding-block: clamp(3.5rem, 8vw, 8rem);
+    padding-block: clamp(5rem, 12vw, 12rem);
+    padding-block-end: clamp(6rem, 13vw, 13rem);
   }
   .section-y-tight {
-    padding-block: clamp(3rem, 5vw, 6rem);
+    padding-block: clamp(3.5rem, 7vw, 8rem);
+    padding-block-end: clamp(4rem, 7.75vw, 8.75rem);
   }
   .container-tafc {
     width: 100%;
-    max-width: 80rem;
+    max-width: 84rem;
     margin-inline: auto;
     padding-inline: 1.5rem;
   }
   @media (min-width: 1024px) {
     .container-tafc {
-      padding-inline: 2rem;
+      padding-inline: 2.5rem;
     }
+  }
+  /* Editorial column — long-form copy blocks that should not run the full
+     84rem. Sits inside `.container-tafc`, not instead of it. */
+  .container-narrow {
+    width: 100%;
+    max-width: 56rem;
+    margin-inline: auto;
   }
 
   /* Reading measure. Character-count-based, so it holds across all three
@@ -282,7 +288,7 @@
     max-width: 68ch;
   }
 
-  /* Eyebrow rule — the teal hairline that precedes every section label.
+  /* Eyebrow rule — the accent hairline that precedes a section label.
      Uses margin-inline-end so it flips correctly in RTL. */
   .eyebrow-rule::before {
     content: "";
@@ -292,6 +298,11 @@
     vertical-align: middle;
     margin-inline-end: 0.75rem;
     background-color: var(--tafc-accent);
+  }
+  /* On ink the deep marine disappears; the logo cyan is the correct value
+     there and clears 8.9:1. */
+  .eyebrow-rule-ink::before {
+    background-color: var(--tafc-accent-bright);
   }
 
   .text-balance {
@@ -306,6 +317,46 @@
      the data layer read as data now that the mono family is gone. */
   .tabular {
     font-variant-numeric: tabular-nums;
+  }
+
+  /* ---- Photo grade --------------------------------------------------------
+     One consistent grade across every photo on the site: slightly cooled,
+     flattened highlights, deepened shadows. Keeps AI/stock sources from
+     different shoots reading as one photography set. Apply to any
+     next/image that shows photography (not UI chrome). */
+  .photo-grade {
+    filter: saturate(0.94) contrast(1.04) brightness(0.97);
+  }
+
+  /* ---- Index row --------------------------------------------------------
+     THE ONE INTERACTION THIS REDESIGN ADDS. Numbered hairline rows — category
+     index, process steps, about values, footer nav — draw a rule in from the
+     reading edge on hover and on keyboard focus. `transform-origin` is logical
+     via the `rtl:` override, so in Arabic it grows from the right.
+
+     It is the reading direction made visible, and it is reused in four places
+     so it reads as a system rather than as a flourish. Under reduced motion the
+     `transition-duration` clamp above takes it to 120ms, which is a state
+     change rather than an animation.  */
+  .index-rule {
+    display: block;
+    height: 1px;
+    background-color: var(--tafc-accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.55s var(--ease-out);
+  }
+  [dir="rtl"] .index-rule {
+    transform-origin: right center;
+  }
+  .group:hover .index-rule,
+  .group:focus-visible .index-rule,
+  .group[data-active="true"] .index-rule {
+    transform: scaleX(1);
+  }
+  /* Ink variant — the deep marine is invisible on navy. */
+  .index-rule-ink {
+    background-color: var(--tafc-accent-bright);
   }
 
   /* ---- Horizontal rail --------------------------------------------------
@@ -340,6 +391,23 @@
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
+/* Marquee loop. Track carries four copies of one set; translating by 25%
+   (one set width) lands seamlessly. Direction is flipped for RTL via the
+   `animation-direction` override on the element; speed comes from the
+   inline `animation-duration`. Pauses on hover (see marquee.tsx). */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-25%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 48s linear infinite;
+}
+
 /* Hide scrollbar for horizontal scroll areas */
 .scrollbar-hide {
   -ms-overflow-style: none;
@@ -350,10 +418,39 @@
 }
 
 /* ==========================================================================
-   Reduced motion. Neutralises the marquee and every transform-based scroll
-   reveal, while leaving opacity fades intact so content still appears. Framer
-   Motion components additionally check useReducedMotion() so their animations
-   are skipped rather than snapped.
+   Z-INDEX SCALE. Documented, not decorative. Layers use exactly these steps:
+     0    base ( stacking context roots, isolation )
+     10   in-section lifts ( thumbnails over their row, card links )
+     20   secondary chrome ( floating back buttons, sticky sub-rails )
+     30   sticky page rails ( breadcrumbs )
+     40   fixed action bars ( mobile CTA )
+     50   global chrome ( header, mobile menu overlay )
+     100  system ( skip link, toasts )
+   Adding a z-index outside this scale is a defect; if a new layer is
+   genuinely needed, add a step here first.
+   ========================================================================== */
+
+/* ==========================================================================
+   GRAIN. One fixed, pointer-events-none overlay across the whole viewport:
+   breaks the digital flatness of the flat salt/paper surfaces at ~2.5%
+   without costing a repaint per scroll frame (fixed layers composite once).
+   The SVG is an inline feTurbulence noise, base64-encoded, tiled at 160px.
+   ========================================================================== */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.025;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIj48ZmlsdGVyIGlkPSJuIj8+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iNCIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxNjAiIGhlaWdodD0iMTYwIiBmaWx0ZXI9InVybCgjbikgb3BhY2l0eT0iMC42Ii8+PC9zdmc+");
+}
+
+/* ==========================================================================
+   Reduced motion. Two tiers, per Apple's guidance: movement stops, feedback
+   doesn't. Animations collapse to short opacity/color changes; the marquee
+   holds still; parallax and reveals render final state. Motion components
+   additionally check useReducedMotion() so their transforms are skipped
+   rather than snapped.
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -361,11 +458,26 @@
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 120ms !important;
     scroll-behavior: auto !important;
   }
 
+  /* Movement stops outright. */
+  .animate-marquee,
   .animate-shimmer {
     animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   Reduced transparency. Floating chrome (header, rails, dropdown) drops its
+   blur and goes solid. Blur is expensive and illegible for these users; the
+   surface stays recognizable because it keeps its place in the palette.
+   ========================================================================== */
+@media (prefers-reduced-transparency: reduce) {
+  .glass-surface {
+    background-color: var(--tafc-salt) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
   }
 }

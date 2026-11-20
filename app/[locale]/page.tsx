@@ -6,6 +6,7 @@ import { Marquee } from "@/components/sections/marquee"
 import { AboutPreview } from "@/components/sections/about-preview"
 import { BestSellers } from "@/components/sections/best-sellers"
 import { Categories } from "@/components/sections/categories"
+import { ProcessBand } from "@/components/sections/process-band"
 import { TargetClients } from "@/components/sections/target-clients"
 import { CatalogPreview } from "@/components/sections/catalog-preview"
 import { ContactPreview } from "@/components/sections/contact-preview"
@@ -24,18 +25,24 @@ export default async function HomePage({ params }: Props) {
         <>
             <Header />
             {/*
-              Order and tone alternate deliberately: ink → light → shell → ink →
-              cinematic → light → ink. The three product showcases progress
-              browse (Categories, a text index) → featured (BestSellers, a
-              photographic rail) → full grid (CatalogPreview, spec cards), so no
-              two of them share a treatment, with AboutPreview as the mid-page
-              credibility break and TargetClients as a full-bleed video seam.
+              Section order is unchanged. What changed is the surface rhythm:
+              salt · salt · salt · paper · salt · paper · INK · video · salt · INK.
+              Ink went from four bands to two, so a dark band is an event rather
+              than the default — the credibility break (AboutPreview) and the
+              close (ContactPreview, running into the ink footer). The video band
+              between them is its own surface: the footage IS the ground there.
+
+              The three product showcases still progress browse (Categories, a
+              text index) → featured (BestSellers, a photographic rail) → full
+              grid (CatalogPreview, spec cards), so no two share a treatment,
+              with ProcessBand explaining the chain between them.
             */}
-            <main>
+            <main id="main-content">
                 <Hero />
                 <Marquee />
                 <Categories />
                 <BestSellers />
+                <ProcessBand />
                 <AboutPreview />
                 <TargetClients />
                 <CatalogPreview />

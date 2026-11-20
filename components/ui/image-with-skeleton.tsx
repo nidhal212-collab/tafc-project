@@ -12,9 +12,9 @@ interface ImageWithSkeletonProps extends Omit<ImageProps, "onLoad"> {
  * LQIP placeholder + soft fade-in — the pattern every competitor site uses, so
  * the behaviour is kept as-is. Only the placeholder colour changed: the sweep
  * was `slate-200 → slate-100 → slate-200`, a cool grey that belongs to no TAFC
- * surface and flashed noticeably lighter than the `tafc-shell` band it sits on.
- * It now carries the ink at the same low alphas as `SkeletonBar`, so the
- * placeholder reads as a tint of the page rather than a foreign panel.
+ * surface and flashed noticeably lighter than the salt band it sits on. It now
+ * carries the ink at the same low alphas as `SkeletonBar`, so the placeholder
+ * reads as a tint of the page rather than a foreign panel.
  *
  * Both call sites (`ProductCard`, the product-detail gallery) are on light
  * surfaces. `skeletonClassName` is the escape hatch if one ever lands on navy.

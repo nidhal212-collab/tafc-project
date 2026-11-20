@@ -2,18 +2,16 @@
 
 import { useState, useMemo, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
-import { Search, X, SlidersHorizontal, Check } from "lucide-react"
-import Image from "next/image"
+import { MagnifyingGlass, X, SlidersHorizontal } from "@phosphor-icons/react"
 import { useTranslations, useMessages } from "next-intl"
 import { cn } from "@/lib/utils"
 import { Header } from "@/components/layout/header"
 import { Footer } from "@/components/layout/footer"
 import { ProductCard } from "@/components/ui/product-card"
-import { SectionHeader } from "@/components/ui/section-header"
-import { Eyebrow } from "@/components/ui/section-intro"
+import { SectionIntro, Eyebrow } from "@/components/ui/section-intro"
 import { Reveal } from "@/components/ui/reveal"
 import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
+import { ProductsSkeleton } from "@/components/ui/products-skeleton"
 import {
   Select,
   SelectContent,
@@ -29,7 +27,7 @@ import {
   type ProductsDataTranslations,
 } from "@/lib/products-data"
 
-const CARD_GRID = "grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3"
+const CARD_GRID = "grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3"
 
 function ProductsContent() {
   const searchParams = useSearchParams()
@@ -135,40 +133,50 @@ function ProductsContent() {
       .filter((group) => group.items.length > 0)
   }, [hasActiveFilters, translatedCategories, translatedProducts])
 
-  /** One recipe for the category list, reused by the sidebar and the mobile drawer. */
-  const categoryButton = (slug: string, label: string) => (
-    <button
-      key={slug}
-      onClick={() => handleCategoryChange(slug)}
-      className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-lg px-4 py-3 text-start text-sm transition-colors duration-200",
-        selectedCategory === slug
-          ? "bg-tafc-ink font-medium text-white"
-          : "text-tafc-ink/65 hover:bg-tafc-ink/[0.05] hover:text-tafc-ink"
-      )}
-    >
-      <span>{label}</span>
-      {selectedCategory === slug && (
-        <Check aria-hidden="true" className="size-4 shrink-0 text-tafc-accent" />
-      )}
-    </button>
-  )
+  /**
+   * One recipe for the category list, reused by the sidebar and the mobile
+   * drawer. A filled navy pill for the active filter made the sidebar the
+   * heaviest object on a page about photographs; active is now ink type plus the
+   * site's `.index-rule` hairline at the reading edge, which is the same marker
+   * the homepage ranges index uses.
+   */
+  const categoryButton = (slug: string, label: string) => {
+    const active = selectedCategory === slug
+    return (
+      <button
+        key={slug}
+        onClick={() => handleCategoryChange(slug)}
+        data-active={active}
+        aria-current={active ? "true" : undefined}
+        className={cn(
+          "group relative block w-full border-b border-tafc-ink/12 py-3 text-start text-sm transition-colors duration-300 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tafc-accent",
+          active ? "font-medium text-tafc-ink" : "text-tafc-ink/65 hover:text-tafc-ink"
+        )}
+      >
+        {label}
+        <span
+          aria-hidden="true"
+          className="index-rule absolute inset-x-0 bottom-0"
+        />
+      </button>
+    )
+  }
 
   const filterPanel = (
     <div className="space-y-8">
       <div>
-        <h2 className="mb-4 text-eyebrow text-tafc-ink/55 uppercase">{t("filterCategories")}</h2>
-        <div className="space-y-1">
+        <h2 className="mb-4 text-eyebrow text-tafc-ink/65 uppercase">{t("filterCategories")}</h2>
+        <div className="border-t border-tafc-ink/12">
           {categoryButton("all", t("filterAllCategories"))}
           {translatedCategories.map((category) => categoryButton(category.slug, category.name))}
         </div>
       </div>
 
       {hasActiveFilters && (
-        <div className="border-t border-tafc-ink/[0.08] pt-6">
-          <h2 className="mb-4 text-eyebrow text-tafc-ink/55 uppercase">{t("filterSortBy")}</h2>
+        <div className="border-t border-tafc-ink/12 pt-6">
+          <h2 className="mb-4 text-eyebrow text-tafc-ink/65 uppercase">{t("filterSortBy")}</h2>
           <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="h-11 w-full border-tafc-ink/12 bg-white">
+            <SelectTrigger className="h-11 w-full border-tafc-ink/15 bg-tafc-paper">
               <SelectValue placeholder={t("filterSortBy")} />
             </SelectTrigger>
             <SelectContent>
@@ -180,8 +188,8 @@ function ProductsContent() {
       )}
 
       {hasActiveFilters && (
-        <div className="border-t border-tafc-ink/[0.08] pt-6">
-          <Button variant="outline" onClick={clearFilters} className="w-full rounded-full">
+        <div className="border-t border-tafc-ink/12 pt-6">
+          <Button variant="onLight" onClick={clearFilters} className="w-full">
             {t("filterReset")}
           </Button>
         </div>
@@ -192,46 +200,41 @@ function ProductsContent() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-tafc-shell">
+      <main id="main-content" className="min-h-screen bg-tafc-salt">
         {/* ---- Catalog hero band ---------------------------------------- */}
-        <section className="relative isolate overflow-hidden bg-tafc-ink pt-32 pb-16 md:pt-40 md:pb-20">
-          <Image
-            src="/products-hero-seafood-display.jpg"
-            alt=""
-            aria-hidden="true"
-            fill
-            priority
-            quality={75}
-            sizes="100vw"
-            className="-z-10 object-cover object-center"
-          />
-          {/* Scrim: keeps the display type legible over the photograph. */}
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-gradient-to-r from-tafc-ink via-tafc-ink/88 to-tafc-ink/55 rtl:bg-gradient-to-l"
-          />
-
+        {/* Was a photograph under a horizontal navy scrim. A catalogue page is
+            about the photographs in the grid below; putting a seventh one behind
+            the title, dark enough to read type over, competed with them and cost
+            a full-viewport image fetch before the first product appeared. It is a
+            salt band now: type, a hairline, nothing else. */}
+        <section className="border-b border-tafc-ink/12 bg-tafc-salt pt-28 pb-14 md:pt-32 md:pb-18">
           <div className="container-tafc">
             <Reveal className="max-w-3xl">
-              <Eyebrow tone="ink">{t("heroCatalog")}</Eyebrow>
-              <h1 className="mt-5 font-display text-h1 text-balance text-white">
-                {t("heroTitle")} <span className="text-tafc-accent">{t("heroHighlight")}</span>{" "}
+              <Eyebrow>{t("heroCatalog")}</Eyebrow>
+              <h1 className="mt-6 font-display text-h1 text-balance text-tafc-ink">
+                {t("heroTitle")} <span className="font-medium">{t("heroHighlight")}</span>{" "}
                 {t("heroSubtitle")}
               </h1>
-              <p className="mt-6 max-w-2xl text-deck text-pretty text-white/60">
+              <p className="mt-6 max-w-2xl text-deck text-pretty text-tafc-ink/65">
                 {t("heroDescription")}
-              </p>
-              {/* Trust line — the three fake numbered "chef" avatars are gone; the
-                  claim stands on its own rather than on invented faces. */}
-              <p className="mt-8 inline-flex items-center gap-2 border-t border-white/15 pt-6 text-meta text-white/70 uppercase tracking-[0.14em]">
-                {t("heroApprovedBy")}
-                <span className="font-display text-base font-semibold tracking-normal text-tafc-accent">
-                  {t("heroChefs")}
-                </span>
               </p>
             </Reveal>
           </div>
         </section>
+
+        {/* Trust line — its own row under the hero band, not a micro-strip
+            inside it. The claim stands on its own rather than on invented
+            faces. */}
+        <div className="border-b border-tafc-ink/12 bg-tafc-paper">
+          <div className="container-tafc">
+            <p className="flex items-center gap-2 py-5 text-meta text-tafc-ink/70 uppercase tracking-[0.14em]">
+              {t("heroApprovedBy")}
+              <span className="font-display text-base font-medium tracking-normal text-tafc-ink">
+                {t("heroChefs")}
+              </span>
+            </p>
+          </div>
+        </div>
 
         {/* ---- Catalog ------------------------------------------------- */}
         <section className="section-y-tight">
@@ -244,16 +247,16 @@ function ProductsContent() {
 
               {/* Mobile filter drawer */}
               {showMobileFilters && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-white p-6 lg:hidden">
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-tafc-paper p-6 lg:hidden">
                   <div className="mb-8 flex items-center justify-between">
-                    <span className="eyebrow-rule inline-flex items-center text-eyebrow text-tafc-ink/55 uppercase">
+                    <span className="eyebrow-rule inline-flex items-center text-eyebrow text-tafc-ink/65 uppercase">
                       {t("filterCategories")}
                     </span>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => setShowMobileFilters(false)}
-                      className="rounded-full"
+                      className="text-tafc-ink hover:bg-tafc-ink/[0.06]"
                     >
                       <X className="size-5" />
                       <span className="sr-only">{t("filterCategories")}</span>
@@ -268,21 +271,21 @@ function ProductsContent() {
                 {/* Toolbar */}
                 <div className="mb-10 space-y-4">
                   <div className="relative max-w-2xl">
-                    <Search
+                    <MagnifyingGlass
                       aria-hidden="true"
-                      className="pointer-events-none absolute start-4 top-1/2 size-4.5 -translate-y-1/2 text-tafc-ink/35"
+                      className="pointer-events-none absolute start-4 top-1/2 size-4.5 -translate-y-1/2 text-tafc-ink/50"
                     />
                     <input
                       type="text"
                       placeholder={t("searchPlaceholder")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="h-13 w-full rounded-full border border-tafc-ink/12 bg-white ps-12 pe-12 text-base text-tafc-ink placeholder:text-tafc-ink/35 focus:border-tafc-accent/50 focus:ring-3 focus:ring-tafc-accent/20 focus:outline-none"
+                      className="h-13 w-full rounded-sm border border-tafc-ink/15 bg-tafc-paper ps-12 pe-12 text-base text-tafc-ink placeholder:text-tafc-ink/60 focus:border-tafc-accent focus:ring-3 focus:ring-tafc-accent/20 focus:outline-none"
                     />
                     {searchQuery && (
                       <button
                         onClick={() => setSearchQuery("")}
-                        className="absolute end-4 top-1/2 -translate-y-1/2 text-tafc-ink/40 transition-colors hover:text-tafc-ink"
+                        className="absolute end-4 top-1/2 -translate-y-1/2 text-tafc-ink/55 transition-colors hover:text-tafc-ink"
                       >
                         <X className="size-4" />
                         <span className="sr-only">{t("filterReset")}</span>
@@ -293,15 +296,15 @@ function ProductsContent() {
                   {/* Mobile filter + sort */}
                   <div className="flex gap-3 lg:hidden">
                     <Button
-                      variant="outline"
+                      variant="onLight"
                       onClick={() => setShowMobileFilters(true)}
-                      className="h-12 flex-1 rounded-full"
+                      className="h-12 flex-1"
                     >
                       <SlidersHorizontal aria-hidden="true" className="size-4" />
                       {t("filterCategories")}
                     </Button>
                     <Select value={sortBy} onValueChange={setSortBy}>
-                      <SelectTrigger className="h-12 flex-1 rounded-full border-tafc-ink/12 bg-white">
+                      <SelectTrigger className="h-12 flex-1 border-tafc-ink/15 bg-tafc-paper">
                         <SelectValue placeholder={t("filterSortBy")} />
                       </SelectTrigger>
                       <SelectContent>
@@ -317,11 +320,10 @@ function ProductsContent() {
                   <div className="space-y-20">
                     {groupedProducts.map((group) => (
                       <section key={group.slug} id={group.slug} className="scroll-mt-28">
-                        <SectionHeader
-                          title={group.name}
-                          description={`${t("discoverPremium")} ${group.name.toLowerCase()}.`}
-                          className="mb-10"
-                        />
+                        {/* The category name is the whole header. The old
+                            templated "Découvrez nos ..." deck repeated six
+                            times and said nothing each time. */}
+                        <SectionIntro title={group.name} className="mb-10" />
                         <div className={CARD_GRID}>
                           {group.items.map((product, idx) => (
                             <ProductCard key={product.id} product={product} index={idx} />
@@ -333,13 +335,13 @@ function ProductsContent() {
                 ) : (
                   // VIEW 2: FILTERED FLAT LIST
                   <div>
-                    <div className="mb-10 flex flex-wrap items-baseline justify-between gap-4 border-b border-tafc-ink/[0.08] pb-6">
+                    <div className="mb-10 flex flex-wrap items-baseline justify-between gap-4 border-b border-tafc-ink/12 pb-6">
                       <h2 className="font-display text-h2 text-tafc-ink">
                         {selectedCategory !== "all"
                           ? translatedCategories.find((c) => c.slug === selectedCategory)?.name
                           : t("resultsTitle")}
                       </h2>
-                      <span className="text-meta text-tafc-ink/50 uppercase tracking-[0.14em]">
+                      <span className="text-data text-tafc-ink/65 uppercase tabular">
                         {filteredProducts.length} {t("productsCount")}
                       </span>
                     </div>
@@ -351,22 +353,19 @@ function ProductsContent() {
                         ))}
                       </div>
                     ) : (
-                      <div className="rounded-2xl border border-dashed border-tafc-ink/15 bg-white py-20 text-center">
-                        <Search
-                          aria-hidden="true"
-                          className="mx-auto mb-5 size-10 text-tafc-ink/15"
-                        />
+                      /* Empty state. The dashed box and the faded 40px magnifier
+                         were both saying "nothing here" a third time, after the
+                         heading and the copy had already said it. Type on a
+                         hairline-ruled paper panel, start-aligned like the rest
+                         of the page. */
+                      <div className="rounded-sm border border-tafc-ink/12 bg-tafc-paper p-10 md:p-14">
                         <h3 className="font-display text-h3 text-tafc-ink">
                           {t("searchNoResults")}
                         </h3>
-                        <p className="mx-auto mt-3 max-w-sm text-tafc-ink/55">
+                        <p className="mt-3 max-w-sm text-tafc-ink/65">
                           {t("searchNoResultsDesc")}
                         </p>
-                        <Button
-                          onClick={clearFilters}
-                          variant="ink"
-                          className="mt-7 rounded-full px-6"
-                        >
+                        <Button onClick={clearFilters} variant="ink" size="lg" className="mt-8">
                           {t("viewCatalog")}
                         </Button>
                       </div>
@@ -377,37 +376,6 @@ function ProductsContent() {
             </div>
           </div>
         </section>
-      </main>
-      <Footer />
-    </>
-  )
-}
-
-function ProductsSkeleton() {
-  return (
-    <>
-      <Header />
-      <main className="min-h-screen bg-tafc-shell">
-        <div className="h-[22rem] w-full bg-tafc-ink md:h-[26rem]" />
-        <div className="container-tafc section-y-tight">
-          <div className="flex flex-col gap-12 lg:flex-row lg:gap-14">
-            <div className="hidden shrink-0 space-y-3 lg:block lg:w-60">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-11 w-full rounded-lg" />
-              <Skeleton className="h-11 w-full rounded-lg" />
-              <Skeleton className="h-11 w-full rounded-lg" />
-              <Skeleton className="h-11 w-full rounded-lg" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <Skeleton className="mb-10 h-13 max-w-2xl rounded-full" />
-              <div className={CARD_GRID}>
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} className="aspect-[3/4] rounded-2xl" />
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
       </main>
       <Footer />
     </>

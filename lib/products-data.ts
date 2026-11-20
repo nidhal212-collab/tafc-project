@@ -105,7 +105,6 @@ export function getTranslatedCategories(
 export const categories = [
   { slug: "crevettes-crustaces", name: "Crevettes & crustacés", icon: "shrimp" },
   { slug: "calamars-poulpes", name: "Calamars & poulpes", icon: "octopus" },
-  { slug: "mollusques", name: "Mollusques", icon: "shell" },
   { slug: "poissons-mediterranee", name: "Poissons Méditerranée", icon: "fish" },
   { slug: "saumon-thon", name: "Saumon & thon", icon: "fish" },
   { slug: "caviar-haute-gastronomie", name: "Caviar & haute gastronomie", icon: "sparkles" },
@@ -575,15 +574,17 @@ export const products = [
   },
 
   // =========================
-  // MOLLUSQUES
+  // MOLLUSQUES (folded into Calamars & poulpes — a one-product range read
+  // as an empty shelf; the seafood mix belongs with the other prepared
+  // mollusk lines.)
   // =========================
   {
     id: "33",
     slug: "mixte-fruits-de-mer",
     name: "Mixte fruits de mer",
     latinName: "",
-    category: "Mollusques",
-    categorySlug: "mollusques",
+    category: "Calamars & poulpes",
+    categorySlug: "calamars-poulpes",
     description:
       "Mélange de fruits de mer prêt à l’emploi, idéal pour paellas, risottos, pizzas, pâtes et woks de la mer.",
     image: "/products/fruit_de_mer_mixte.jpg",

@@ -3,33 +3,43 @@
 import Image from "next/image"
 import { useTranslations } from "next-intl"
 import { Link } from "@/i18n/navigation"
-import { motion, useReducedMotion } from "framer-motion"
-import { ArrowRight } from "lucide-react"
+import { motion, useReducedMotion } from "motion/react"
+import { ArrowRight } from "@phosphor-icons/react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Eyebrow } from "@/components/ui/section-intro"
-import { DataLabel } from "@/components/ui/spec"
-import { categories } from "@/lib/categories"
-import { products } from "@/lib/products-data"
 
-const EASE = [0.22, 1, 0.36, 1] as const
+const EASE = [0.23, 1, 0.32, 1] as const
 
 /**
- * Full-bleed cinematic hero, closed by a manifest bar.
+ * Editorial split hero on salt.
  *
- * The photograph and navy scrim are the pattern every leading exporter converges
- * on (Iceland Seafood, Mowi, Royal Greenland, seafood.no) and they stay. What is
- * new is the strip along the bottom: four spec entries — origin, ranges,
- * references, cold chain — set in mono, on the same hairline grid the rest of the
- * page uses.
+ * This inverts the pattern every seafood exporter converges on — stock photo,
+ * navy gradient scrim, white headline, coloured pill CTA — because that pattern
+ * is precisely what makes the category interchangeable. Here the page is light,
+ * the photograph is a plate rather than a backdrop, and there is no scrim at
+ * all: nothing is sitting on top of the image, so the image does not have to be
+ * darkened into a texture to keep type legible.
  *
- * It does three jobs at once. It answers the first four questions a buyer
- * actually has, before any scrolling. It states the page's thesis, that this is
- * a working catalogue and not a brochure. And it hands the eye off into the
- * marquee, so hero and rail still read as one dark block.
+ * The copy column aligns to the container gutter while the photograph bleeds off
+ * the outer edge. `max(2.5rem, calc((100vw - 84rem)/2 + 2.5rem))` is that
+ * alignment: below 84rem it resolves to the raw gutter, above it, to the gutter
+ * plus the centring margin. It is a logical property, so the whole composition
+ * mirrors in Arabic without a second rule.
  *
- * The two figures are counted from the data rather than typed, so they cannot
- * drift from `lib/categories.ts` and `lib/products-data.ts`.
+ * Exactly three text elements: headline, subtext, and the two-item CTA row. The
+ * eyebrow that used to sit above the headline is gone — a hero does not need a
+ * label telling you it is a hero.
+ *
+ * The headline is one sentence assembled from two message keys and broken by
+ * `text-wrap: balance`, not by a hard `<br>`. At display scale the copy column
+ * is the narrow half of the split, so a forced break gave one line that
+ * overflowed and re-wrapped plus a short orphan under it. Letting the browser
+ * balance it yields even measures at every width, and it fixes the English and
+ * Arabic cases, where the old break landed before the final noun.
+ *
+ * The 14s Ken Burns scale is gone too. It animated the LCP element for fourteen
+ * seconds after paint, and a photograph that will not hold still is the opposite
+ * of expensive.
  */
 export function Hero() {
   const t = useTranslations("hero")
@@ -44,96 +54,49 @@ export function Hero() {
   const item = reduceMotion
     ? { hidden: { opacity: 1 }, show: { opacity: 1 } }
     : {
-        hidden: { opacity: 0, y: 24 },
-        show: { opacity: 1, y: 0, transition: { duration: 0.75, ease: EASE } },
+        hidden: { opacity: 0, transform: "translateY(20px)" },
+        show: {
+          opacity: 1,
+          transform: "translateY(0px)",
+          transition: { duration: 0.75, ease: EASE },
+        },
       }
 
-  const manifest = [
-    { label: t("manifest.origin"), value: t("manifest.originValue") },
-    { label: t("manifest.ranges"), value: String(categories.length).padStart(2, "0") },
-    { label: t("manifest.references"), value: String(products.length) },
-    { label: t("manifest.coldChain"), value: t("manifest.coldChainValue") },
-  ]
-
   return (
-    <section className="relative isolate flex min-h-svh flex-col overflow-hidden bg-tafc-ink">
-      {/* ---- Photograph -------------------------------------------------- */}
-      <motion.div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10"
-        initial={{ scale: reduceMotion ? 1 : 1.08 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 14, ease: "linear" }}
-      >
-        {/* One photograph, not a pair. This previously rendered a phone crop and
-            a desktop crop side by side with `md:hidden` / `hidden md:block` —
-            but `display: none` does not stop a fetch, so every visit downloaded
-            both, on the page's LCP element. Both source files are also square
-            (1024×1024), so the "art-directed crop" was really just two different
-            photographs; `object-cover` does the framing either way. */}
-        <Image
-          src="/premium-seafood-platter-shrimp-lobster-mediterrane.jpg"
-          alt=""
-          fill
-          priority
-          quality={85}
-          sizes="100vw"
-          className="object-cover object-center"
-        />
-      </motion.div>
-
-      {/* Scrim. Runs from the text side inwards, so it flips in RTL. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-r from-tafc-ink/95 via-tafc-ink/72 to-tafc-ink/25 rtl:bg-gradient-to-l"
-      />
-      {/* Bottom fade — seats the manifest bar and carries the eye into the
-          marquee, so hero and rail read as one dark block. */}
-      <div
-        aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 -z-10 h-64 bg-gradient-to-t from-tafc-ink via-tafc-ink/55 to-transparent"
-      />
-
-      {/* ---- Content ----------------------------------------------------- */}
-      <div className="container-tafc relative flex flex-1 items-center pt-32 pb-16 md:pt-36 md:pb-20">
+    <section className="relative isolate bg-tafc-salt">
+      {/* `svh`, not `vh` — iOS Safari's collapsing address bar makes `vh` jump.
+          5rem is the header, so the hero alone fills exactly one viewport and
+          the CTA lands above the fold with nothing cropped. */}
+      <div className="grid min-h-[calc(100svh-5rem)] grid-cols-1 lg:grid-cols-2">
+        {/* ---- Copy -------------------------------------------------------- */}
         <motion.div
           variants={container}
           initial="hidden"
           animate="show"
-          className="max-w-3xl text-start"
+          className={cn(
+            "order-2 flex flex-col justify-center px-6 pb-16 pt-14 text-start lg:order-1 lg:pb-24 lg:pt-28",
+            "lg:pe-16 lg:ps-[max(2.5rem,calc((100vw-84rem)/2+2.5rem))]",
+          )}
         >
-          <motion.div variants={item}>
-            <Eyebrow tone="ink">{t("badge")}</Eyebrow>
-          </motion.div>
-
           <motion.h1
             variants={item}
-            className="mt-7 font-display text-display text-balance text-white"
+            className="font-display text-display text-balance text-tafc-ink"
           >
-            {t("titleLine1")}
-            <br />
-            <span className="text-tafc-accent">{t("titleHighlight")}</span>
+            {t("titleLine1")} {t("titleHighlight")}
           </motion.h1>
 
           <motion.p
             variants={item}
-            className="mt-5 font-display text-h3 font-medium text-white/70"
+            className="mt-7 measure text-deck text-pretty text-tafc-ink/65"
           >
             {t("subtitle")}
           </motion.p>
 
-          <motion.p
-            variants={item}
-            className="mt-6 max-w-xl text-deck text-pretty text-white/60"
-          >
-            {t("description")}
-          </motion.p>
-
           <motion.div
             variants={item}
-            className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8"
+            className="mt-11 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-9"
           >
-            <Button asChild size="xl" variant="action">
+            <Button asChild size="xl" variant="ink">
               <Link href="/contact">{tContact("cta")}</Link>
             </Button>
 
@@ -141,7 +104,7 @@ export function Hero() {
               asChild
               size="inline"
               variant="quiet"
-              className="font-medium text-white/85 rtl:hover:[&_svg]:-translate-x-1"
+              className="font-medium text-tafc-ink/75 rtl:hover:[&_svg]:-translate-x-1"
             >
               <Link href="/products">
                 {t("ctaPrimary")}
@@ -150,43 +113,24 @@ export function Hero() {
             </Button>
           </motion.div>
         </motion.div>
-      </div>
 
-      {/* ---- Manifest bar ------------------------------------------------ */}
-      <motion.div
-        initial={reduceMotion ? undefined : { opacity: 0, y: 16 }}
-        animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.6, ease: EASE }}
-        className="relative border-t border-white/[0.12] bg-tafc-ink/35 backdrop-blur-md"
-      >
-        <div className="container-tafc">
-          {/* Two columns on phones, four from `lg`. Hairlines are drawn per cell
-              with logical `border-s` / `ps` so the grid flips in RTL and no rule
-              doubles up at the edges. */}
-          <dl className="grid grid-cols-2 lg:grid-cols-4">
-            {manifest.map(({ label, value }, index) => (
-              <div
-                key={label}
-                className={cn(
-                  "flex flex-col gap-1.5 py-5 sm:py-6",
-                  index % 2 === 0 && "pe-5 sm:pe-6",
-                  index % 2 === 1 && "border-s border-white/[0.09] ps-5 sm:ps-6",
-                  index > 1 && "border-t border-white/[0.09] lg:border-t-0",
-                  index > 0 && "lg:border-s lg:border-white/[0.09] lg:ps-6",
-                  index < 3 && "lg:pe-6",
-                )}
-              >
-                <dt>
-                  <DataLabel tone="ink">{label}</DataLabel>
-                </dt>
-                <dd className="font-display text-[0.9375rem] font-medium text-white tabular sm:text-base">
-                  {value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+        {/* ---- Photograph -------------------------------------------------
+            No scrim, no gradient, no radius. One file: this previously rendered
+            a phone crop and a desktop crop side by side with `md:hidden` /
+            `hidden md:block`, but `display: none` does not stop a fetch, so
+            every visit downloaded both — on the page's LCP element. */}
+        <div className="relative order-1 h-[38svh] min-h-[280px] lg:order-2 lg:h-auto lg:min-h-0">
+          <Image
+            src="/premium-seafood-platter-shrimp-lobster-mediterrane.jpg"
+            alt=""
+            fill
+            priority
+            quality={85}
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="photo-grade object-cover object-center"
+          />
         </div>
-      </motion.div>
+      </div>
     </section>
   )
 }

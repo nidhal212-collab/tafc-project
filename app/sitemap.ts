@@ -1,52 +1,36 @@
 import { MetadataRoute } from 'next'
+import { categories, products } from '@/lib/products-data'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://tafc.tn'
-  
+  const locales = ['', '/en', '/ar'] // fr is the default locale and stays unprefixed
+  const now = new Date()
+
+  const languageAlternates = (path: string) =>
+    Object.fromEntries(locales.map((loc) => [loc || 'fr', `${baseUrl}${loc}${path}`]))
+
   // Static pages
-  const staticPages = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: 'weekly' as const,
-      priority: 1,
+  const staticPaths = ['', '/products', '/about', '/contact', '/privacy', '/terms']
+  const staticPages: MetadataRoute.Sitemap = staticPaths.map((path) => ({
+    url: `${baseUrl}${path}`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: path === '' ? 1 : path === '/products' ? 0.9 : 0.7,
+    alternates: {
+      languages: languageAlternates(path),
     },
-    {
-      url: `${baseUrl}/products`,
-      lastModified: new Date(),
-      changeFrequency: 'daily' as const,
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/contact`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly' as const,
-      priority: 0.8,
-    },
-  ]
-
-  // Product categories for better SEO
-  const categories = [
-    'crevettes',
-    'cephalopodes',
-    'poissons',
-    'coquillages',
-    'caviar',
-    'oeufs-de-poisson',
-  ]
-
-  const categoryPages = categories.map((category) => ({
-    url: `${baseUrl}/products?category=${category}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly' as const,
-    priority: 0.8,
   }))
 
-  return [...staticPages, ...categoryPages]
+  // Product detail pages
+  const productPages: MetadataRoute.Sitemap = products.map((product) => ({
+    url: `${baseUrl}/products/${product.slug}`,
+    lastModified: now,
+    changeFrequency: 'monthly',
+    priority: 0.6,
+    alternates: {
+      languages: languageAlternates(`/products/${product.slug}`),
+    },
+  }))
+
+  return [...staticPages, ...productPages]
 }

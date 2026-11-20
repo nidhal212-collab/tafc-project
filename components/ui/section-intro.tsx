@@ -5,11 +5,12 @@ import { Reveal } from "@/components/ui/reveal"
 import type { SectionTone } from "@/components/ui/section-shell"
 
 export interface SectionIntroProps {
-    /** Small uppercase kicker above the title. Rendered with a teal hairline. */
+    /** Small uppercase kicker above the title. Rendered with an accent hairline. */
     eyebrow?: string
     /**
-     * Section title. Accepts a node so callers can wrap part of it in
-     * `<span className="text-tafc-accent">` for an accented phrase.
+     * Section title. Accepts a node so callers can wrap part of it in a
+     * `<span className="font-medium">` for emphasis — same family, same colour.
+     * Colour is not an emphasis mechanism here; the accent is a hairline.
      */
     title: React.ReactNode
     /** Short supporting paragraph under the title. */
@@ -34,13 +35,17 @@ export interface SectionIntroProps {
  * Repeating one recipe is what makes the page read as confident rather than
  * busy — so every section header on the site goes through here rather than
  * inventing its own sizes.
+ *
+ * The eyebrow is rationed. Ten sections allow at most three, and the homepage
+ * ships two: it is a label for a thing that needs labelling, not decoration
+ * stapled to every band.
  */
 export function SectionIntro({
     eyebrow,
     title,
     deck,
     action,
-    tone = "light",
+    tone = "salt",
     align = "start",
     as: Heading = "h2",
     size = "h2",
@@ -60,10 +65,14 @@ export function SectionIntro({
             {eyebrow && (
                 <span
                     className={cn(
-                        "eyebrow-rule mb-5 inline-flex items-center text-eyebrow uppercase",
-                        // /65 is the muted floor — 5.05:1 on white. This was
-                        // /55, which measures 3.70:1 and fails AA.
-                        isInk ? "text-tafc-accent" : "text-tafc-ink/65",
+                        "eyebrow-rule mb-6 inline-flex items-center text-eyebrow uppercase",
+                        // The deep marine accent is invisible on navy and the
+                        // bright cyan measures 1.9:1 on salt, so the hairline
+                        // and the text both switch by surface.
+                        // /65 is the muted floor on light — 5.05:1 on salt.
+                        isInk
+                            ? "eyebrow-rule-ink text-tafc-accent-bright"
+                            : "text-tafc-ink/65",
                     )}
                 >
                     {eyebrow}
@@ -85,7 +94,7 @@ export function SectionIntro({
             {deck && (
                 <p
                     className={cn(
-                        "mt-5 measure text-deck text-pretty",
+                        "mt-6 measure text-deck text-pretty",
                         isInk ? "text-white/65" : "text-tafc-ink/65",
                     )}
                 >
@@ -93,18 +102,18 @@ export function SectionIntro({
                 </p>
             )}
 
-            {action && <div className="mt-8">{action}</div>}
+            {action && <div className="mt-10">{action}</div>}
         </Reveal>
     )
 }
 
 /**
  * Standalone eyebrow, for the handful of places that need the kicker without a
- * full intro block (hero, product detail breadcrumb area).
+ * full intro block (product detail breadcrumb area).
  */
 export function Eyebrow({
     children,
-    tone = "light",
+    tone = "salt",
     className,
 }: {
     children: React.ReactNode
@@ -115,7 +124,9 @@ export function Eyebrow({
         <span
             className={cn(
                 "eyebrow-rule inline-flex items-center text-eyebrow uppercase",
-                tone === "ink" ? "text-tafc-accent" : "text-tafc-ink/65",
+                tone === "ink"
+                    ? "eyebrow-rule-ink text-tafc-accent-bright"
+                    : "text-tafc-ink/65",
                 className,
             )}
         >
